@@ -5,12 +5,11 @@
 
 /** @typedef {(FlatConfig.Config | Linter.Config)[]} Configs */
 
+import js from '@eslint/js';
 import jsdoc from 'eslint-plugin-jsdoc';
 import prettierConfig from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import ts from 'typescript-eslint';
-
-import js from '@eslint/js';
 
 /** @type {Configs} */
 const envConfigs = [

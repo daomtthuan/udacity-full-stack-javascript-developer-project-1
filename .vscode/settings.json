@@ -9,5 +9,9 @@
     "*.tsx": "${capture}.ts",
     "tsconfig.json": "tsconfig.*.json",
     "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, .editorconfig, .gitignore, tsconfig.*, eslint.config.*, prettier.config.*, nodemon.*"
+  },
+  "exportall.config.folderListener": ["/src/core/types"],
+  "material-icon-theme.files.associations": {
+    "*.type.ts": "typescript-def"
   }
 }

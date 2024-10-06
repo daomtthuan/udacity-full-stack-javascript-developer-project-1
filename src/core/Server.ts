@@ -3,8 +3,7 @@ import type { Server as HTTPServer } from 'http';
 
 import express from 'express';
 
-import type IServer from '~/core/types/IServer';
-import type IServerConfiguration from '~/core/types/IServerConfiguration';
+import { IServer, IServerConfiguration } from '~/core/types';
 
 /** Application server. */
 export default class Server implements IServer {
@@ -14,7 +13,7 @@ export default class Server implements IServer {
   private _port: number;
   private _app: Express;
 
-  public constructor({ host = 'localhost', port = 3000 }: IServerConfiguration) {
+  public constructor({ host, port }: IServerConfiguration) {
     this._host = host;
     this._port = port;
 
