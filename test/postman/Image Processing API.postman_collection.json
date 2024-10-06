@@ -1,0 +1,27 @@
+{
+	"info": {
+		"_postman_id": "e305bed2-ab05-4b30-8fe4-0e446dac0956",
+		"name": "Image Processing API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38818338"
+	},
+	"item": [
+		{
+			"name": "Image Management",
+			"item": [
+				{
+					"name": "Get Images list",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Image Processing",
+			"item": []
+		}
+	]
+}
