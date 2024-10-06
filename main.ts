@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 
-import Server from '~/core/Server';
+import Server from '~/core/AServer';
 
 dotenv.config();
 

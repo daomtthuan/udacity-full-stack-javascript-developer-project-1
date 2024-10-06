@@ -1,1 +1,1 @@
-export * from './server.type';
+export * from './_server.type';
