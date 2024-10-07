@@ -3,60 +3,59 @@ import type { Server as HTTPServer } from 'http';
 
 import express from 'express';
 
-import { IServer, IServerConfiguration } from '~/core/types';
+import type { Server, ServerOptions } from '~core/server.type';
 
-/** Application server. */
-export default class Server implements IServer {
-  #instance?: HTTPServer;
+/**
+ * Create the application.
+ *
+ * @param app The Application.
+ *
+ * @returns Application.
+ */
+function createApp(): Express {
+  const instance: Express = express();
+  instance.use(express.json());
 
-  private _host: string;
-  private _port: number;
-  private _app: Express;
+  return instance;
+}
 
-  public constructor({ host, port }: IServerConfiguration) {
-    this._host = host;
-    this._port = port;
+/**
+ * Creates the server.
+ *
+ * @param options The server options.
+ *
+ * @returns The server.
+ */
+export default function createServer({ host, port }: ServerOptions): Server {
+  let server: HTTPServer | undefined;
 
-    this._app = express();
-    this._configure();
-  }
+  const app = createApp();
 
-  public start() {
-    if (this.#instance?.listening) {
-      console.warn(`Server is already running on http://${this.host}:${this.port}`);
-    }
+  const instance: Server = {
+    start() {
+      if (server?.listening) {
+        console.warn(`Server is already running on http://${host}:${port}`);
+      }
 
-    this.#instance = this.app.listen(this.port, () => {
-      console.log(`Server running on http://${this.host}:${this.port}`);
-    });
-  }
+      server = app.listen(port, () => {
+        console.log(`Server running on http://${host}:${port}`);
+      });
+    },
 
-  public stop(): void {
-    if (!this.#instance?.listening) {
-      return;
-    }
+    stop() {
+      if (!server?.listening) {
+        console.warn('Server is not running');
+        return;
+      }
 
-    this.#instance.close();
-  }
+      server.close();
+    },
 
-  public restart(): void {
-    this.stop();
-    this.start();
-  }
+    restart() {
+      instance.stop();
+      instance.start();
+    },
+  };
 
-  private _configure() {
-    this.app.use(express.json());
-  }
-
-  public get host() {
-    return this._host;
-  }
-
-  public get port() {
-    return this._port;
-  }
-
-  public get app() {
-    return this._app;
-  }
+  return instance;
 }

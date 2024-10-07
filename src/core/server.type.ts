@@ -1,19 +1,19 @@
-import type { Express } from 'express';
+import type { Logger } from 'winston';
 
-/** Server configuration. */
-export interface IServerConfiguration {
+/** Server options. */
+export type ServerOptions = {
   /** The host to listen on. */
   host: string;
 
   /** The port to listen on. */
   port: number;
-}
+
+  /** The logger. */
+  logger: Logger;
+};
 
 /** Server. */
-export interface IServer extends IServerConfiguration {
-  /** The application instance. */
-  app: Express;
-
+export type Server = {
   /** Starts the server. */
   start(): void;
 
@@ -22,4 +22,4 @@ export interface IServer extends IServerConfiguration {
 
   /** Restarts the server. */
   restart(): void;
-}
+};

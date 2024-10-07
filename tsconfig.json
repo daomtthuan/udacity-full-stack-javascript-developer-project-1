@@ -18,8 +18,8 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": ["src/*"],
-      "~core/*": ["src/core/*"]
+      "~core/*": ["src/core/*"],
+      "~utils/*": ["src/utils/*"]
     },
 
     // # JavaScript Support
