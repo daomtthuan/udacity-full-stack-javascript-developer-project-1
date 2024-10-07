@@ -26,7 +26,7 @@ function createApp(): Express {
  *
  * @returns The server.
  */
-export default function createServer({ host, port }: ServerOptions): Server {
+export default function createServer({ host, port, logger }: ServerOptions): Server {
   let server: HTTPServer | undefined;
 
   const app = createApp();
@@ -34,17 +34,17 @@ export default function createServer({ host, port }: ServerOptions): Server {
   const instance: Server = {
     start() {
       if (server?.listening) {
-        console.warn(`Server is already running on http://${host}:${port}`);
+        logger.warn(`Server is already running on http://${host}:${port}`);
       }
 
       server = app.listen(port, () => {
-        console.log(`Server running on http://${host}:${port}`);
+        logger.info(`Server running on http://${host}:${port}`);
       });
     },
 
     stop() {
       if (!server?.listening) {
-        console.warn('Server is not running');
+        logger.warn('Server is not running');
         return;
       }
 
