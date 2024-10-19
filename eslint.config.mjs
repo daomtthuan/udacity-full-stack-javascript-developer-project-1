@@ -30,7 +30,11 @@ const envConfigs = [
 const jsConfigs = [js.configs.recommended];
 
 /** @type {Configs} */
-const tsConfigs = ts.config(...ts.configs.recommended);
+const tsConfigs = ts.config(...ts.configs.recommended, {
+  rules: {
+    '@typescript-eslint/no-unsafe-function-type': 'off',
+  },
+});
 
 /** @type {Configs} */
 const jsdocConfigs = [
@@ -58,6 +62,12 @@ const jsdocConfigs = [
       'off',
       {
         checkDestructured: false,
+      },
+    ],
+    'jsdoc/require-returns': [
+      'error',
+      {
+        checkGetters: false,
       },
     ],
     'jsdoc/check-param-names': [

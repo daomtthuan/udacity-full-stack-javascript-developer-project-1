@@ -1,73 +1,93 @@
-import type { Logger } from 'winston';
+import type { Logger as LoggerInstance } from 'winston';
 
-import winston from 'winston';
+import { singleton } from 'tsyringe';
+import Winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
-import type { LoggerOptions } from '~utils/logger.type';
+import type { ILogger, LoggerConfig } from '~utils/types';
+
+import Configuration from '~core/Configuration';
 
 const {
   format,
   transports: { Console },
-} = winston;
+} = Winston;
 
-/**
- * Create the logger.
- *
- * @param options The logger options.
- *
- * @returns The logger.
- */
-export default function createLogger({ dirname }: LoggerOptions): Logger {
-  const formats = format.combine(
-    format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss',
-    }),
-    format.errors({
-      stack: true,
-    }),
-    format.printf(({ timestamp, level, message, ...data }) => {
-      const log = `${timestamp} ${level}: ${message}`;
+/** Logger. */
+@singleton()
+export default class Logger implements ILogger {
+  readonly #config: LoggerConfig;
 
-      return Object.keys(data).length ? `${log}\n${JSON.stringify(data, null, 2)}` : log;
-    }),
-  );
+  readonly #instance: LoggerInstance;
 
-  const instance = winston.createLogger({
-    level: 'debug',
-    format: formats,
+  constructor(config: Configuration) {
+    this.#config = config.loggerConfig;
 
-    transports: [
-      new Console({
-        format: format.combine(
-          format.colorize({
-            colors: {
-              info: 'blue',
-              warn: 'yellow',
-              error: 'red',
-            },
-          }),
-          formats,
-        ),
+    const formats = format.combine(
+      format.timestamp({
+        format: 'YYYY-MM-DD HH:mm:ss',
       }),
-
-      new DailyRotateFile({
-        dirname,
-        filename: '%DATE%.debug.log',
-        level: 'info',
-        zippedArchive: true,
+      format.errors({
+        stack: true,
       }),
-      new DailyRotateFile({
-        dirname,
-        filename: '%DATE%.error.log',
-        level: 'error',
-        zippedArchive: true,
-        handleExceptions: true,
-        handleRejections: true,
+      format.printf(({ timestamp, level, message, ...data }) => {
+        const log = `${timestamp} ${level}: ${message}`;
+
+        return Object.keys(data).length ? `${log}\n${JSON.stringify(data, null, 2)}` : log;
       }),
-    ],
+    );
 
-    exitOnError: false,
-  });
+    this.#instance = Winston.createLogger({
+      level: 'debug',
+      format: formats,
+      transports: [
+        new Console({
+          format: format.combine(
+            format.colorize({
+              colors: {
+                info: 'blue',
+                warn: 'yellow',
+                error: 'red',
+              },
+            }),
+            formats,
+          ),
+        }),
 
-  return instance;
+        new DailyRotateFile({
+          dirname: this.#config.dir,
+          filename: '%DATE%-debug.log',
+          zippedArchive: true,
+        }),
+        new DailyRotateFile({
+          dirname: this.#config.dir,
+          filename: '%DATE%-error.log',
+          level: 'error',
+          zippedArchive: true,
+          handleExceptions: true,
+          handleRejections: true,
+        }),
+      ],
+
+      exitOnError: false,
+    });
+
+    this.debug('Logger created');
+  }
+
+  error(message: string, ...meta: unknown[]): void {
+    this.#instance.error(message, ...meta);
+  }
+
+  warn(message: string, ...meta: unknown[]): void {
+    this.#instance.warn(message, ...meta);
+  }
+
+  info(message: string, ...meta: unknown[]): void {
+    this.#instance.info(message, ...meta);
+  }
+
+  debug(message: string, ...meta: unknown[]): void {
+    this.#instance.debug(message, ...meta);
+  }
 }

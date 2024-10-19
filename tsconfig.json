@@ -18,6 +18,7 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
+      "~app/*": ["src/app/*"],
       "~core/*": ["src/core/*"],
       "~utils/*": ["src/utils/*"]
     },
@@ -27,6 +28,7 @@
     "checkJs": true,
 
     // # Emit
+    "emitDecoratorMetadata": true,
     "sourceMap": true,
     "outDir": "dist",
     "importHelpers": true,
@@ -60,5 +62,5 @@
     // # Completeness
     "skipLibCheck": true
   },
-  "include": ["main.ts", "src"]
+  "include": ["src"]
 }

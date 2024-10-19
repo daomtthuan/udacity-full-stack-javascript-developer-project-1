@@ -1,61 +1,92 @@
-import type { Express } from 'express';
 import type { Server as HTTPServer } from 'http';
 
-import express from 'express';
+import { singleton } from 'tsyringe';
 
-import type { Server, ServerOptions } from '~core/server.type';
+import type { IServer, ServerConfig } from '~core/types';
 
-/**
- * Create the application.
- *
- * @param app The Application.
- *
- * @returns Application.
- */
-function createApp(): Express {
-  const instance: Express = express();
-  instance.use(express.json());
+import App from '~core/App';
+import Configuration from '~core/Configuration';
+import Logger from '~utils/Logger';
 
-  return instance;
-}
+/** Server. */
+@singleton()
+export default class Server implements IServer {
+  readonly #config: ServerConfig;
+  readonly #logger: Logger;
+  readonly #app: App;
 
-/**
- * Creates the server.
- *
- * @param options The server options.
- *
- * @returns The server.
- */
-export default function createServer({ host, port, logger }: ServerOptions): Server {
-  let server: HTTPServer | undefined;
+  #instance: HTTPServer;
 
-  const app = createApp();
+  constructor(config: Configuration, logger: Logger, app: App) {
+    this.#config = config.serverConfig;
+    this.#logger = logger;
+    this.#app = app;
 
-  const instance: Server = {
-    start() {
-      if (server?.listening) {
-        logger.warn(`Server is already running on http://${host}:${port}`);
-      }
+    this.#instance = this.#createInstance();
 
-      server = app.listen(port, () => {
-        logger.info(`Server running on http://${host}:${port}`);
+    this.#logger.debug('Server created');
+  }
+
+  start(): void {
+    if (this.#instance.listening) {
+      this.#logger.warn(`Server is already running on ${this.#baseUrl}`);
+      return;
+    }
+
+    this.#instance = this.#createInstance();
+  }
+
+  stop(): void {
+    if (!this.#instance.listening) {
+      this.#logger.warn('Server is not running');
+      return;
+    }
+
+    this.#instance.close();
+  }
+
+  restart(): void {
+    this.stop();
+    this.start();
+  }
+
+  #createInstance(): HTTPServer {
+    const server = this.#app
+      .run({
+        host: this.#config.host,
+        port: this.#config.port,
+        onRun: () => {
+          this.#onStart();
+        },
+      })
+      .on('error', (error) => {
+        this.#onError(error);
       });
-    },
 
-    stop() {
-      if (!server?.listening) {
-        logger.warn('Server is not running');
-        return;
+    return server;
+  }
+
+  #onStart(): void {
+    this.#logger.info(`Server running on ${this.#baseUrl}`);
+  }
+
+  #onError(error: NodeJS.ErrnoException): void {
+    if (error.syscall === 'listen') {
+      if (error.code === 'EACCES') {
+        this.#logger.error(`Port ${this.#config.port} requires elevated privileges`);
+        process.exit(1);
       }
 
-      server.close();
-    },
+      if (error.code === 'EADDRINUSE') {
+        this.#logger.error(`Port ${this.#config.port} is already in use`);
+        process.exit(1);
+      }
+    }
 
-    restart() {
-      instance.stop();
-      instance.start();
-    },
-  };
+    throw error;
+  }
 
-  return instance;
+  get #baseUrl(): string {
+    return `http://${this.#config.host}:${this.#config.port}`;
+  }
 }
