@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { ExpressRequest, ExpressResponse } from '~core/types';
 
 import ApiControllerBase from '~controllers/api/ApiControllerBase';
 import { action, controller } from '~core/decorators';
@@ -7,7 +7,7 @@ import { action, controller } from '~core/decorators';
 @controller({ path: '/image' })
 export default class ImageController extends ApiControllerBase {
   @action.get({ path: '/:name' })
-  public getImages(_req: Request, res: Response): void {
+  public getImages(_req: ExpressRequest, res: ExpressResponse): void {
     this.logger.info('Loading image by name');
 
     res.send('Image');

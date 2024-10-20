@@ -20,6 +20,7 @@
     "paths": {
       "~controllers/*": ["src/controllers/*"],
       "~core/*": ["src/core/*"],
+      "~middlewares/*": ["src/middlewares/*"],
       "~utils/*": ["src/utils/*"]
     },
 

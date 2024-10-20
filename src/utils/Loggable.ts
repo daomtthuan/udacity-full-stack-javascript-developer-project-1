@@ -2,8 +2,8 @@ import { gray } from 'ansis';
 
 import Logger from '~utils/Logger';
 
-/** AutoLogger. */
-export default abstract class AutoLogger {
+/** Loggable. */
+export default abstract class Loggable {
   readonly #logger: Logger;
 
   protected constructor(logger: Logger) {

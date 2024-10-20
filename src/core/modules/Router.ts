@@ -8,12 +8,12 @@ import type { ControllerMetadata, IController, IRouter, RouteConfig } from '~cor
 
 import ImageController from '~controllers/api/ImageController';
 import StorageController from '~controllers/api/StorageController';
-import AutoLogger from '~utils/AutoLogger';
+import Loggable from '~utils/Loggable';
 import Logger from '~utils/Logger';
 
 /** Router. */
 @singleton()
-export default class Router extends AutoLogger implements IRouter {
+export default class Router extends Loggable implements IRouter {
   readonly #routes: RouteConfig[];
 
   public constructor(logger: Logger) {
@@ -23,7 +23,11 @@ export default class Router extends AutoLogger implements IRouter {
   }
 
   #createRoute<C extends IController, A extends unknown[]>(target: Class<C, A>): RouteConfig {
-    const controllerMetadata: ControllerMetadata<C> = Reflect.getMetadata(`metadata`, target);
+    const controllerMetadata: ControllerMetadata<C> | undefined = Reflect.getMetadata(`metadata`, target);
+    if (!controllerMetadata) {
+      throw new Error(`Controller ${target.name} is not decorated.`);
+    }
+
     const controller = container.resolve(target);
 
     const router = Express.Router();

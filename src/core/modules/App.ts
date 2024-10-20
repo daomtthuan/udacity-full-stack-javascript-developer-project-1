@@ -6,12 +6,12 @@ import { singleton } from 'tsyringe';
 import type { AppRunOptions, ExpressApp, HttpServer, IApp } from '~core/types';
 
 import Router from '~core/modules/Router';
-import AutoLogger from '~utils/AutoLogger';
+import Loggable from '~utils/Loggable';
 import Logger from '~utils/Logger';
 
 /** Application. */
 @singleton()
-export default class App extends AutoLogger implements IApp {
+export default class App extends Loggable implements IApp {
   readonly #router: Router;
 
   readonly #instance: ExpressApp;

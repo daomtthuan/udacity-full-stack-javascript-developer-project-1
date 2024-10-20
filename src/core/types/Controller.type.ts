@@ -30,5 +30,9 @@ export type ControllerMetadata<C extends IController> = {
 /** Controller. */
 export interface IController {}
 
-/** Controller decorator. */
+/**
+ * Controller decorator.
+ *
+ * @template C Controller type.
+ */
 export type ControllerDecorator = <C extends IController, A extends unknown[]>(target: Class<C, A>) => void;

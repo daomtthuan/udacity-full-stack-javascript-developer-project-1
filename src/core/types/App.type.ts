@@ -1,9 +1,15 @@
-import type { Express } from 'express';
+import type { Express, Request, Response } from 'express';
 
 import type { HttpServer } from '~core/types';
 
 /** Express application. */
 export type ExpressApp = Express;
+
+/** Express request. */
+export type ExpressRequest = Request;
+
+/** Express response. */
+export type ExpressResponse = Response;
 
 /** Application run options. */
 export type AppRunOptions = {

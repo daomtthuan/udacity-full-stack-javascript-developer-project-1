@@ -1,4 +1,5 @@
 import DotENV from 'dotenv';
+import Path from 'path';
 import { singleton } from 'tsyringe';
 
 import type { DirectoryConfig, IConfiguration, ServerConfig } from '~core/types';
@@ -18,8 +19,8 @@ export default class Configuration implements IConfiguration {
     };
 
     this.#directoryConfig = {
-      loggerDir: process.env['LOGS_DIR'] || 'logs',
-      resourceDir: process.env['RESOURCES_DIR'] || 'resources',
+      loggerDir: Path.resolve(process.cwd(), process.env['LOGS_DIR'] || 'logs'),
+      resourceDir: Path.resolve(process.cwd(), process.env['RESOURCES_DIR'] || 'resources'),
     };
   }
 

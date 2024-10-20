@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["Logable", "tsbuildinfo", "tsdoc", "tsyringe", "Udacity", "uncolorize"],
+  "cSpell.words": ["loggable", "tsbuildinfo", "tsdoc", "tsyringe", "Udacity", "uncolorize"],
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
     "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
@@ -9,7 +9,7 @@
     "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, .editorconfig, .gitignore, tsconfig.*, eslint.config.*, prettier.config.*, nodemon.*",
     "tsconfig.json": "tsconfig.*.json"
   },
-  "exportall.config.folderListener": ["/src/core/types", "/src/utils/types"],
+  "exportall.config.folderListener": ["/src/core/types", "/src/utils/types", "/src/middlewares/types", "/src/controllers/types"],
   "material-icon-theme.files.associations": {
     "*.type.ts": "typescript-def",
     "router.ts": "typescript"

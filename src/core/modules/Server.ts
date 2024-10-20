@@ -5,12 +5,12 @@ import type { HttpServer, IServer, ServerConfig } from '~core/types';
 
 import App from '~core/modules/App';
 import Configuration from '~core/modules/Configuration';
-import AutoLogger from '~utils/AutoLogger';
+import Loggable from '~utils/Loggable';
 import Logger from '~utils/Logger';
 
 /** Server. */
 @singleton()
-export default class Server extends AutoLogger implements IServer {
+export default class Server extends Loggable implements IServer {
   readonly #config: ServerConfig;
   readonly #app: App;
 

@@ -1,4 +1,4 @@
-import type { ActionMetadata, ActionMethod, ActionOptions, ControllerMetadata, IController, SpecialActionOptions } from '~core/types';
+import type { ActionDecorator, ActionMetadata, ActionMethod, ActionOptions, ControllerMetadata, IController, SpecialActionOptions } from '~core/types';
 
 /**
  * Action decorator factory.
@@ -7,7 +7,7 @@ import type { ActionMetadata, ActionMethod, ActionOptions, ControllerMetadata, I
  *
  * @returns Action decorator.
  */
-function action(options?: Partial<ActionOptions>): MethodDecorator {
+function action(options?: Partial<ActionOptions>): ActionDecorator {
   const resolvedOptions = resolveOptions(options);
 
   return (target, propertyKey) => {
@@ -18,7 +18,7 @@ function action(options?: Partial<ActionOptions>): MethodDecorator {
 
 const specificAction = (['get', 'post', 'put', 'patch', 'delete'] satisfies ActionMethod[]).reduce(
   (prev, method) => {
-    prev[method] = (options?: Partial<SpecialActionOptions>): MethodDecorator => {
+    prev[method] = (options?: Partial<SpecialActionOptions>): ActionDecorator => {
       return action({
         ...options,
         method,
@@ -27,7 +27,7 @@ const specificAction = (['get', 'post', 'put', 'patch', 'delete'] satisfies Acti
 
     return prev;
   },
-  {} as Record<ActionMethod, (options?: Partial<SpecialActionOptions>) => MethodDecorator>,
+  {} as Record<ActionMethod, (options?: Partial<SpecialActionOptions>) => ActionDecorator>,
 );
 
 /**
@@ -96,7 +96,11 @@ function registerAction<C extends IController, A extends object>(target: A, meta
     return;
   }
 
-  const controllerMetadata: ControllerMetadata<C> = Reflect.getMetadata('metadata', target.constructor);
+  const controllerMetadata: ControllerMetadata<C> | undefined = Reflect.getMetadata('metadata', target.constructor);
+  if (!controllerMetadata) {
+    throw new Error(`Controller ${target.constructor.name} not decorated.`);
+  }
+
   Reflect.defineMetadata(
     'metadata',
     {
