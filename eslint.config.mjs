@@ -32,7 +32,12 @@ const jsConfigs = [js.configs.recommended];
 /** @type {Configs} */
 const tsConfigs = ts.config(...ts.configs.recommended, {
   rules: {
-    '@typescript-eslint/no-unsafe-function-type': 'off',
+    '@typescript-eslint/no-empty-object-type': [
+      'error',
+      {
+        allowWithName: '^I',
+      },
+    ],
   },
 });
 

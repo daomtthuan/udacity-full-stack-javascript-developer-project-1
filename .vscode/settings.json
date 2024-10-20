@@ -11,7 +11,8 @@
   },
   "exportall.config.folderListener": ["/src/core/types", "/src/utils/types"],
   "material-icon-theme.files.associations": {
-    "*.type.ts": "typescript-def"
+    "*.type.ts": "typescript-def",
+    "router.ts": "typescript"
   },
   "typescript.tsdk": "node_modules\\typescript\\lib"
 }

@@ -10,7 +10,7 @@ export default class Configuration implements IConfiguration {
   readonly #serverConfig: ServerConfig;
   readonly #loggerConfig: LoggerConfig;
 
-  constructor() {
+  public constructor() {
     DotENV.config();
 
     this.#serverConfig = {
@@ -21,15 +21,13 @@ export default class Configuration implements IConfiguration {
     this.#loggerConfig = {
       dir: process.env['LOGS_DIR'] || 'logs',
     };
-
-    console.log('Configuration created');
   }
 
-  get serverConfig(): ServerConfig {
+  public get serverConfig(): ServerConfig {
     return this.#serverConfig;
   }
 
-  get loggerConfig(): LoggerConfig {
+  public get loggerConfig(): LoggerConfig {
     return this.#loggerConfig;
   }
 }

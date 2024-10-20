@@ -1,11 +1,9 @@
-import type { Server as HTTPServer } from 'http';
-
 import { singleton } from 'tsyringe';
 
-import type { IServer, ServerConfig } from '~core/types';
+import type { HttpServer, IServer, ServerConfig } from '~core/types';
 
-import App from '~core/App';
-import Configuration from '~core/Configuration';
+import App from '~core/modules/App';
+import Configuration from '~core/modules/Configuration';
 import Logger from '~utils/Logger';
 
 /** Server. */
@@ -15,28 +13,28 @@ export default class Server implements IServer {
   readonly #logger: Logger;
   readonly #app: App;
 
-  #instance: HTTPServer;
+  #instance: HttpServer;
 
-  constructor(config: Configuration, logger: Logger, app: App) {
+  public constructor(config: Configuration, logger: Logger, app: App) {
     this.#config = config.serverConfig;
     this.#logger = logger;
     this.#app = app;
 
-    this.#instance = this.#createInstance();
+    this.#instance = this.#run();
 
     this.#logger.debug('Server created');
   }
 
-  start(): void {
+  public start(): void {
     if (this.#instance.listening) {
-      this.#logger.warn(`Server is already running on ${this.#baseUrl}`);
+      this.#logger.warn(`Server is already running on '${this.#baseUrl}'`);
       return;
     }
 
-    this.#instance = this.#createInstance();
+    this.#instance = this.#run();
   }
 
-  stop(): void {
+  public stop(): void {
     if (!this.#instance.listening) {
       this.#logger.warn('Server is not running');
       return;
@@ -45,23 +43,19 @@ export default class Server implements IServer {
     this.#instance.close();
   }
 
-  restart(): void {
+  public restart(): void {
     this.stop();
     this.start();
   }
 
-  #createInstance(): HTTPServer {
+  #run(): HttpServer {
     const server = this.#app
       .run({
         host: this.#config.host,
         port: this.#config.port,
-        onRun: () => {
-          this.#onStart();
-        },
+        onRun: this.#onStart.bind(this),
       })
-      .on('error', (error) => {
-        this.#onError(error);
-      });
+      .on('error', this.#onError.bind(this));
 
     return server;
   }

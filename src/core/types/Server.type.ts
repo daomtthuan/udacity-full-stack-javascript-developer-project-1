@@ -1,3 +1,8 @@
+import type { Server } from 'http';
+
+/** HTTP server. */
+export type HttpServer = Server;
+
 /** Server configuration. */
 export type ServerConfig = {
   /** Host. */

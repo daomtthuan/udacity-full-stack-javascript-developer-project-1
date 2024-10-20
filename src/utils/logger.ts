@@ -1,16 +1,14 @@
-import type { Logger as LoggerInstance } from 'winston';
-
 import { singleton } from 'tsyringe';
 import Winston from 'winston';
-import DailyRotateFile from 'winston-daily-rotate-file';
+import WinstonDailyRotateFile from 'winston-daily-rotate-file';
 
-import type { ILogger, LoggerConfig } from '~utils/types';
+import type { ILogger, LoggerConfig, WinstonLogger } from '~utils/types';
 
-import Configuration from '~core/Configuration';
+import Configuration from '~core/modules/Configuration';
 
 const {
-  format,
-  transports: { Console },
+  format: WinstonFormat,
+  transports: { Console: WinstonConsole },
 } = Winston;
 
 /** Logger. */
@@ -18,19 +16,19 @@ const {
 export default class Logger implements ILogger {
   readonly #config: LoggerConfig;
 
-  readonly #instance: LoggerInstance;
+  readonly #instance: WinstonLogger;
 
-  constructor(config: Configuration) {
+  public constructor(config: Configuration) {
     this.#config = config.loggerConfig;
 
-    const formats = format.combine(
-      format.timestamp({
+    const formats = WinstonFormat.combine(
+      WinstonFormat.timestamp({
         format: 'YYYY-MM-DD HH:mm:ss',
       }),
-      format.errors({
+      WinstonFormat.errors({
         stack: true,
       }),
-      format.printf(({ timestamp, level, message, ...data }) => {
+      WinstonFormat.printf(({ timestamp, level, message, ...data }) => {
         const log = `${timestamp} ${level}: ${message}`;
 
         return Object.keys(data).length ? `${log}\n${JSON.stringify(data, null, 2)}` : log;
@@ -39,11 +37,10 @@ export default class Logger implements ILogger {
 
     this.#instance = Winston.createLogger({
       level: 'debug',
-      format: formats,
       transports: [
-        new Console({
-          format: format.combine(
-            format.colorize({
+        new WinstonConsole({
+          format: WinstonFormat.combine(
+            WinstonFormat.colorize({
               colors: {
                 info: 'blue',
                 warn: 'yellow',
@@ -54,18 +51,20 @@ export default class Logger implements ILogger {
           ),
         }),
 
-        new DailyRotateFile({
+        new WinstonDailyRotateFile({
           dirname: this.#config.dir,
           filename: '%DATE%-debug.log',
           zippedArchive: true,
+          format: formats,
         }),
-        new DailyRotateFile({
+        new WinstonDailyRotateFile({
           dirname: this.#config.dir,
           filename: '%DATE%-error.log',
           level: 'error',
           zippedArchive: true,
           handleExceptions: true,
           handleRejections: true,
+          format: formats,
         }),
       ],
 
@@ -75,19 +74,19 @@ export default class Logger implements ILogger {
     this.debug('Logger created');
   }
 
-  error(message: string, ...meta: unknown[]): void {
+  public error(message: string, ...meta: unknown[]): void {
     this.#instance.error(message, ...meta);
   }
 
-  warn(message: string, ...meta: unknown[]): void {
+  public warn(message: string, ...meta: unknown[]): void {
     this.#instance.warn(message, ...meta);
   }
 
-  info(message: string, ...meta: unknown[]): void {
+  public info(message: string, ...meta: unknown[]): void {
     this.#instance.info(message, ...meta);
   }
 
-  debug(message: string, ...meta: unknown[]): void {
+  public debug(message: string, ...meta: unknown[]): void {
     this.#instance.debug(message, ...meta);
   }
 }
