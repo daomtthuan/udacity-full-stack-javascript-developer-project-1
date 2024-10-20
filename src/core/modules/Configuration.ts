@@ -1,14 +1,13 @@
 import DotENV from 'dotenv';
 import { singleton } from 'tsyringe';
 
-import type { IConfiguration, ServerConfig } from '~core/types';
-import type { LoggerConfig } from '~utils/types';
+import type { DirectoryConfig, IConfiguration, ServerConfig } from '~core/types';
 
 /** Configuration. */
 @singleton()
 export default class Configuration implements IConfiguration {
   readonly #serverConfig: ServerConfig;
-  readonly #loggerConfig: LoggerConfig;
+  readonly #directoryConfig: DirectoryConfig;
 
   public constructor() {
     DotENV.config();
@@ -18,8 +17,9 @@ export default class Configuration implements IConfiguration {
       port: Number(process.env['PORT']) || 3000,
     };
 
-    this.#loggerConfig = {
-      dir: process.env['LOGS_DIR'] || 'logs',
+    this.#directoryConfig = {
+      loggerDir: process.env['LOGS_DIR'] || 'logs',
+      resourceDir: process.env['RESOURCES_DIR'] || 'resources',
     };
   }
 
@@ -27,7 +27,7 @@ export default class Configuration implements IConfiguration {
     return this.#serverConfig;
   }
 
-  public get loggerConfig(): LoggerConfig {
-    return this.#loggerConfig;
+  public get directoryConfig(): DirectoryConfig {
+    return this.#directoryConfig;
   }
 }

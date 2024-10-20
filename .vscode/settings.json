@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["tsbuildinfo", "tsdoc", "tsyringe", "Udacity"],
+  "cSpell.words": ["tsbuildinfo", "tsdoc", "tsyringe", "Udacity", "uncolorize"],
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
     "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",

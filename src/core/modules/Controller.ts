@@ -12,7 +12,7 @@ export default class Controller implements IController {
   public constructor(logger: Logger) {
     this.#logger = logger;
 
-    this.#logger.debug(`${this.constructor.name} created`);
+    this.#logger.debug(`${this.constructor.name} initialized`);
   }
 
   protected get logger(): Logger {

@@ -1,11 +1,19 @@
 import type { ServerConfig } from '~core/types';
-import type { LoggerConfig } from '~utils/types';
+
+/** Directory configuration. */
+export type DirectoryConfig = {
+  /** Logger directory. */
+  readonly loggerDir: string;
+
+  /** Resource directory. */
+  readonly resourceDir: string;
+};
 
 /** Configuration. */
 export interface IConfiguration {
   /** Server configuration. */
   readonly serverConfig: ServerConfig;
 
-  /** Logger configuration. */
-  readonly loggerConfig: LoggerConfig;
+  /** Directory configuration. */
+  readonly directoryConfig: DirectoryConfig;
 }

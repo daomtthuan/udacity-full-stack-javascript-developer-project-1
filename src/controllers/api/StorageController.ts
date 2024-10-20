@@ -30,8 +30,8 @@ export default class StorageController extends ApiControllerBase {
     path: '/upload',
     middleware: [upload.single('image')],
   })
-  public uploadImage(_req: Request, res: Response): void {
-    this.logger.info('Uploading image');
+  public uploadImage(req: Request, res: Response): void {
+    console.log(req.file, req.body);
 
     res.send('Image uploaded');
   }

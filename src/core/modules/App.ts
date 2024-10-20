@@ -23,7 +23,7 @@ export default class App implements IApp {
     this.#instance = Express();
     this.#register();
 
-    this.#logger.debug('Application created');
+    this.#logger.debug('Application initialized');
   }
 
   public run({ host, port, onRun }: AppRunOptions): HttpServer {

@@ -3,12 +3,6 @@ import { Logger } from 'winston';
 /** Winston logger. */
 export type WinstonLogger = Logger;
 
-/** Logger configuration. */
-export type LoggerConfig = {
-  /** Log directory. */
-  readonly dir: string;
-};
-
 /** Logger. */
 export interface ILogger {
   /**

@@ -1,3 +1,4 @@
+import { cyan } from 'ansis';
 import { singleton } from 'tsyringe';
 
 import type { HttpServer, IServer, ServerConfig } from '~core/types';
@@ -22,12 +23,12 @@ export default class Server implements IServer {
 
     this.#instance = this.#run();
 
-    this.#logger.debug('Server created');
+    this.#logger.debug('Server initialized');
   }
 
   public start(): void {
     if (this.#instance.listening) {
-      this.#logger.warn(`Server is already running on '${this.#baseUrl}'`);
+      this.#logger.warn(`Server is already running on ${cyan(this.#baseUrl)}`);
       return;
     }
 
@@ -61,7 +62,7 @@ export default class Server implements IServer {
   }
 
   #onStart(): void {
-    this.#logger.info(`Server running on ${this.#baseUrl}`);
+    this.#logger.info(`Server running on ${cyan(this.#baseUrl)}`);
   }
 
   #onError(error: NodeJS.ErrnoException): void {

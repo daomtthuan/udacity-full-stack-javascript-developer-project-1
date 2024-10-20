@@ -2,7 +2,8 @@ import { singleton } from 'tsyringe';
 import Winston from 'winston';
 import WinstonDailyRotateFile from 'winston-daily-rotate-file';
 
-import type { ILogger, LoggerConfig, WinstonLogger } from '~utils/types';
+import type { DirectoryConfig } from '~core/types';
+import type { ILogger, WinstonLogger } from '~utils/types';
 
 import Configuration from '~core/modules/Configuration';
 
@@ -14,12 +15,12 @@ const {
 /** Logger. */
 @singleton()
 export default class Logger implements ILogger {
-  readonly #config: LoggerConfig;
+  readonly #config: DirectoryConfig;
 
   readonly #instance: WinstonLogger;
 
   public constructor(config: Configuration) {
-    this.#config = config.loggerConfig;
+    this.#config = config.directoryConfig;
 
     const formats = WinstonFormat.combine(
       WinstonFormat.timestamp({
@@ -52,26 +53,26 @@ export default class Logger implements ILogger {
         }),
 
         new WinstonDailyRotateFile({
-          dirname: this.#config.dir,
+          dirname: this.#config.loggerDir,
           filename: '%DATE%-debug.log',
           zippedArchive: true,
-          format: formats,
+          format: WinstonFormat.combine(WinstonFormat.uncolorize(), formats),
         }),
         new WinstonDailyRotateFile({
-          dirname: this.#config.dir,
+          dirname: this.#config.loggerDir,
           filename: '%DATE%-error.log',
           level: 'error',
           zippedArchive: true,
           handleExceptions: true,
           handleRejections: true,
-          format: formats,
+          format: WinstonFormat.combine(WinstonFormat.uncolorize(), formats),
         }),
       ],
 
       exitOnError: false,
     });
 
-    this.debug('Logger created');
+    this.debug('Logger initialized');
   }
 
   public error(message: string, ...meta: unknown[]): void {

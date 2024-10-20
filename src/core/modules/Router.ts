@@ -1,5 +1,6 @@
 import type { Class } from 'type-fest';
 
+import { cyan, green } from 'ansis';
 import Express from 'express';
 import { container, singleton } from 'tsyringe';
 
@@ -21,7 +22,7 @@ export default class Router implements IRouter {
 
     this.#routes = [this.#createRoute(StorageController), this.#createRoute(ImageController)];
 
-    this.#logger.debug('Router created');
+    this.#logger.debug('Router initialized');
   }
 
   #createRoute<C extends IController, A extends unknown[]>(target: Class<C, A>): RouteConfig {
@@ -40,6 +41,9 @@ export default class Router implements IRouter {
       }
 
       router[method](path, ...middleware, handler.bind(controller));
+
+      const url = `${controllerMetadata.path}${path}`;
+      this.#logger.debug(`  Route: ${' '.repeat(8 - method.length)}${method.toUpperCase()} ${green(url)} -> ${cyan(name.toString())}`);
     });
 
     return [controllerMetadata.path, router];
