@@ -1,4 +1,4 @@
-import type { ActionMetadata, ActionOptions, ControllerMetadata, IController, SpecialActionOptions } from '~core/types';
+import type { ActionMetadata, ActionMethod, ActionOptions, ControllerMetadata, IController, SpecialActionOptions } from '~core/types';
 
 /**
  * Action decorator factory.
@@ -7,7 +7,7 @@ import type { ActionMetadata, ActionOptions, ControllerMetadata, IController, Sp
  *
  * @returns Action decorator.
  */
-export default function action(options?: Partial<ActionOptions>): MethodDecorator {
+function action(options?: Partial<ActionOptions>): MethodDecorator {
   const resolvedOptions = resolveOptions(options);
 
   return (target, propertyKey) => {
@@ -16,75 +16,28 @@ export default function action(options?: Partial<ActionOptions>): MethodDecorato
   };
 }
 
-/**
- * Get Action decorator factory.
- *
- * @param options Get Action options.
- *
- * @returns Get Action decorator.
- */
-export function getAction(options: SpecialActionOptions): MethodDecorator {
-  return action({
-    ...options,
-    method: 'get',
-  });
-}
+const specificAction = (['get', 'post', 'put', 'patch', 'delete'] satisfies ActionMethod[]).reduce(
+  (prev, method) => {
+    prev[method] = (options?: Partial<SpecialActionOptions>): MethodDecorator => {
+      return action({
+        ...options,
+        method,
+      });
+    };
+
+    return prev;
+  },
+  {} as Record<ActionMethod, (options?: Partial<SpecialActionOptions>) => MethodDecorator>,
+);
 
 /**
- * Post Action decorator factory.
+ * Action decorator factory.
  *
- * @param options Post Action options.
+ * @param options Action options.
  *
- * @returns Post Action decorator.
+ * @returns Action decorator.
  */
-export function postAction(options: SpecialActionOptions): MethodDecorator {
-  return action({
-    ...options,
-    method: 'post',
-  });
-}
-
-/**
- * Put Action decorator factory.
- *
- * @param options Put Action options.
- *
- * @returns Put Action decorator.
- */
-export function putAction(options: SpecialActionOptions): MethodDecorator {
-  return action({
-    ...options,
-    method: 'put',
-  });
-}
-
-/**
- * Patch Action decorator factory.
- *
- * @param options Patch Action options.
- *
- * @returns Patch Action decorator.
- */
-export function patchAction(options: SpecialActionOptions): MethodDecorator {
-  return action({
-    ...options,
-    method: 'patch',
-  });
-}
-
-/**
- * Delete Action decorator factory.
- *
- * @param options Delete Action options.
- *
- * @returns Delete Action decorator.
- */
-export function deleteAction(options: SpecialActionOptions): MethodDecorator {
-  return action({
-    ...options,
-    method: 'delete',
-  });
-}
+export default Object.assign(action, specificAction);
 
 /**
  * Resolve options.
@@ -93,10 +46,11 @@ export function deleteAction(options: SpecialActionOptions): MethodDecorator {
  *
  * @returns Resolved options.
  */
-function resolveOptions({ method, path }: Partial<ActionOptions> = {}): ActionOptions {
+function resolveOptions({ method, path, middleware }: Partial<ActionOptions> = {}): ActionOptions {
   return {
     method: method || 'get',
     path: path || '',
+    middleware: middleware || [],
   };
 }
 
@@ -114,17 +68,16 @@ function resolveOptions({ method, path }: Partial<ActionOptions> = {}): ActionOp
 function defineMetadata<C extends IController, A extends object>(
   target: A,
   propertyKey: string | symbol,
-  { method = 'get', path = '' }: ActionOptions,
+  { method, path, middleware }: ActionOptions,
 ): ActionMetadata<C> {
   const metadata: ActionMetadata<C> = {
     isAction: true,
     name: propertyKey.toString() as keyof C,
     path,
     method,
+    middleware,
   };
-  Object.entries(metadata).forEach(([key, value]) => {
-    Reflect.defineMetadata(key, value, target);
-  });
+  Reflect.defineMetadata('metadata', metadata, target, propertyKey);
 
   return metadata;
 }
@@ -143,7 +96,13 @@ function registerAction<C extends IController, A extends object>(target: A, meta
     return;
   }
 
-  const actions = Reflect.getMetadata<ControllerMetadata<C>, 'actions'>('actions', target.constructor) || [];
-  actions.push(metadata);
-  Reflect.defineMetadata('actions', actions, target.constructor);
+  const controllerMetadata: ControllerMetadata<C> = Reflect.getMetadata('metadata', target.constructor);
+  Reflect.defineMetadata(
+    'metadata',
+    {
+      ...controllerMetadata,
+      actions: [...controllerMetadata.actions, metadata],
+    },
+    target.constructor,
+  );
 }

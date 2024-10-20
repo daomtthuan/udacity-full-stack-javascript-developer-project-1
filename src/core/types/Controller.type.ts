@@ -1,25 +1,10 @@
-import type { Router } from 'express';
 import type { Class } from 'type-fest';
 
 import type { ActionMetadata } from '~core/types/Action.type';
 
-/** Express router. */
-export type ExpressRouter = Router;
-
 /** Controller options. */
 export type ControllerOptions = {
-  /**
-   * Indicates that the target is a base controller.
-   *
-   * @default false
-   */
-  isBase: boolean;
-
-  /**
-   * Path of the controller route.
-   *
-   * @default ''
-   */
+  /** Path of the controller route. */
   path: string;
 };
 
@@ -43,10 +28,7 @@ export type ControllerMetadata<C extends IController> = {
 };
 
 /** Controller. */
-export interface IController {
-  /** Router of the controller. */
-  router: ExpressRouter;
-}
+export interface IController {}
 
 /** Controller decorator. */
 export type ControllerDecorator = <C extends IController, A extends unknown[]>(target: Class<C, A>) => void;

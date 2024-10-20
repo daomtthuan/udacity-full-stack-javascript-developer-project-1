@@ -2,7 +2,7 @@ import type { Class } from 'type-fest';
 
 import { injectable } from 'tsyringe';
 
-import type { ActionMetadata, ControllerDecorator, ControllerMetadata, ControllerOptions, IController } from '~core/types';
+import type { ControllerDecorator, ControllerMetadata, ControllerOptions, IController } from '~core/types';
 
 /**
  * Controller decorator factory.
@@ -28,9 +28,8 @@ export default function controller(options?: Partial<ControllerOptions>): Contro
  *
  * @returns Resolved options.
  */
-function resolveOptions({ isBase, path }: Partial<ControllerOptions> = {}): ControllerOptions {
+function resolveOptions({ path }: Partial<ControllerOptions> = {}): ControllerOptions {
   return {
-    isBase: isBase || false,
     path: path || '',
   };
 }
@@ -45,16 +44,16 @@ function resolveOptions({ isBase, path }: Partial<ControllerOptions> = {}): Cont
  *
  * @returns Controller metadata.
  */
-function defineMetadata<C extends IController, A extends unknown[]>(target: Class<C, A>, { path = '' }: ControllerOptions): ControllerMetadata<C> {
+function defineMetadata<C extends IController, A extends unknown[]>(target: Class<C, A>, { path }: ControllerOptions): ControllerMetadata<C> {
+  const existingMetadata: ControllerMetadata<C> | undefined = Reflect.getMetadata('metadata', target);
+
   const metadata: ControllerMetadata<C> = {
     isController: true,
     name: target.name,
-    path: resolvePath(target, path),
-    actions: resolveActions(target),
+    path: resolvePath(path, existingMetadata?.path),
+    actions: existingMetadata?.actions ?? [],
   };
-  Object.entries(metadata).forEach(([key, value]) => {
-    Reflect.defineMetadata(key, value, target);
-  });
+  Reflect.defineMetadata('metadata', metadata, target);
 
   return metadata;
 }
@@ -62,34 +61,14 @@ function defineMetadata<C extends IController, A extends unknown[]>(target: Clas
 /**
  * Resolve path.
  *
- * @template C Controller type.
- * @template A Arguments type.
- * @param target Controller class.
  * @param path Path to resolve.
+ * @param prefix Path prefix.
  *
  * @returns Resolved path.
  */
-function resolvePath<C extends IController, A extends unknown[]>(target: Class<C, A>, path: string): string {
-  const prefix = Reflect.getMetadata<ControllerMetadata<C>, 'path'>('path', target) || '';
-
+function resolvePath(path: string, prefix: string = ''): string {
   let resolvedPath = path.startsWith('/') ? path : `/${path}`;
   resolvedPath = resolvedPath.endsWith('/') ? resolvedPath.slice(0, -1) : resolvedPath;
 
   return `${prefix}${resolvedPath}`;
-}
-
-/**
- * Resolve actions.
- *
- * @template C Controller type.
- * @template A Arguments type.
- * @param target Controller class.
- * @param path Path to resolve.
- *
- * @returns Resolved actions.
- */
-function resolveActions<C extends IController, A extends unknown[]>(target: Class<C, A>): ActionMetadata<C>[] {
-  const actions = Reflect.getMetadata<ControllerMetadata<C>, 'actions'>('actions', target) || [];
-
-  return actions;
 }

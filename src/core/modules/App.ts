@@ -1,5 +1,5 @@
 import Compression from 'compression';
-import Express, { type IRouterMatcher } from 'express';
+import Express from 'express';
 import Helmet from 'helmet';
 import { singleton } from 'tsyringe';
 
@@ -30,14 +30,13 @@ export default class App implements IApp {
     return this.#instance.listen(port, host, onRun);
   }
 
-  public get register(): IRouterMatcher<unknown> {
-    return this.#instance.use.bind(this.#instance);
-  }
-
   #register(): void {
     this.#instance.use(Helmet());
     this.#instance.use(Express.json());
     this.#instance.use(Compression());
-    this.#router.routes.forEach(([path, router]) => this.#instance.use(path, router));
+
+    this.#router.routes.forEach((routeConfig) => {
+      this.#instance.use(...routeConfig);
+    });
   }
 }

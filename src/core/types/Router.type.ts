@@ -1,7 +1,13 @@
-import type { ExpressRouter } from '~core/types/Controller.type';
+import type { Router } from 'express';
+
+/** Express router. */
+export type ExpressRouter = Router;
+
+/** Route configuration. */
+export type RouteConfig = [string, ExpressRouter];
 
 /** Router. */
 export interface IRouter {
-  /** Routes to register. */
-  routes: [string, ExpressRouter][];
+  /** Routes Registered in the router. */
+  routes: RouteConfig[];
 }

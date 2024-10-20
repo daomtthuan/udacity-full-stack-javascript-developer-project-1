@@ -1,9 +1,11 @@
 import type { Class } from 'type-fest';
 
+import Express from 'express';
 import { container, singleton } from 'tsyringe';
 
-import type { ControllerMetadata, ExpressRouter, IController, IRouter } from '~core/types';
+import type { ControllerMetadata, IController, IRouter, RouteConfig } from '~core/types';
 
+import ImageController from '~controllers/api/ImageController';
 import StorageController from '~controllers/api/StorageController';
 import Logger from '~utils/Logger';
 
@@ -12,24 +14,38 @@ import Logger from '~utils/Logger';
 export default class Router implements IRouter {
   readonly #logger: Logger;
 
-  readonly #routes: [string, ExpressRouter][] = [];
+  readonly #routes: RouteConfig[];
 
   public constructor(logger: Logger) {
     this.#logger = logger;
 
-    this.#routes = [this.#createRoute(StorageController)];
+    this.#routes = [this.#createRoute(StorageController), this.#createRoute(ImageController)];
 
     this.#logger.debug('Router created');
   }
 
-  #createRoute<C extends IController, A extends unknown[]>(target: Class<C, A>): [string, ExpressRouter] {
+  #createRoute<C extends IController, A extends unknown[]>(target: Class<C, A>): RouteConfig {
+    const controllerMetadata: ControllerMetadata<C> = Reflect.getMetadata(`metadata`, target);
     const controller = container.resolve(target);
-    const path = Reflect.getMetadata<ControllerMetadata<C>, 'path'>('path', target);
 
-    return [path, controller.router];
+    const router = Express.Router();
+    controllerMetadata.actions.forEach(({ isAction, path, method, name, middleware }) => {
+      if (!isAction) {
+        return;
+      }
+
+      const handler = controller[name];
+      if (!(handler instanceof Function)) {
+        throw new Error(`Action ${name.toString()} must be a function.`);
+      }
+
+      router[method](path, ...middleware, handler.bind(controller));
+    });
+
+    return [controllerMetadata.path, router];
   }
 
-  public get routes(): [string, ExpressRouter][] {
+  public get routes(): RouteConfig[] {
     return this.#routes;
   }
 }

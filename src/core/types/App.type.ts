@@ -1,4 +1,4 @@
-import type { Express, IRouterMatcher } from 'express';
+import type { Express } from 'express';
 
 import type { HttpServer } from '~core/types';
 
@@ -27,7 +27,4 @@ export interface IApp {
    * @returns The HTTP server instance.
    */
   run(options: AppRunOptions): HttpServer;
-
-  /** Register module. */
-  register: IRouterMatcher<unknown>;
 }

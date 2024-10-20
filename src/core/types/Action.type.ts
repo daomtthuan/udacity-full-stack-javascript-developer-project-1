@@ -1,3 +1,4 @@
+import type { RequestHandler } from 'express';
 import type { Except } from 'type-fest';
 
 import type { IController } from '~core/types';
@@ -7,19 +8,14 @@ export type ActionMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
 /** Action options. */
 export type ActionOptions = {
-  /**
-   * Method type of the action.
-   *
-   * @default 'get'
-   */
+  /** Method type of the action. */
   method: ActionMethod;
 
-  /**
-   * Path of the action route.
-   *
-   * @default ''
-   */
+  /** Path of the action route. */
   path: string;
+
+  /** Middleware for the action. */
+  middleware: RequestHandler[];
 };
 
 /** Special action options. */
@@ -42,4 +38,7 @@ export type ActionMetadata<C extends IController> = {
 
   /** Method of the action. */
   method: ActionMethod;
+
+  /** Middleware for the action. */
+  middleware: RequestHandler[];
 };
