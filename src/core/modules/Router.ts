@@ -1,6 +1,6 @@
 import type { Class } from 'type-fest';
 
-import { cyan, green } from 'ansis';
+import { cyan, gray, green } from 'ansis';
 import Express from 'express';
 import { container, singleton } from 'tsyringe';
 
@@ -8,21 +8,18 @@ import type { ControllerMetadata, IController, IRouter, RouteConfig } from '~cor
 
 import ImageController from '~controllers/api/ImageController';
 import StorageController from '~controllers/api/StorageController';
+import AutoLogger from '~utils/AutoLogger';
 import Logger from '~utils/Logger';
 
 /** Router. */
 @singleton()
-export default class Router implements IRouter {
-  readonly #logger: Logger;
-
+export default class Router extends AutoLogger implements IRouter {
   readonly #routes: RouteConfig[];
 
   public constructor(logger: Logger) {
-    this.#logger = logger;
+    super(logger);
 
     this.#routes = [this.#createRoute(StorageController), this.#createRoute(ImageController)];
-
-    this.#logger.debug('Router initialized');
   }
 
   #createRoute<C extends IController, A extends unknown[]>(target: Class<C, A>): RouteConfig {
@@ -43,7 +40,7 @@ export default class Router implements IRouter {
       router[method](path, ...middleware, handler.bind(controller));
 
       const url = `${controllerMetadata.path}${path}`;
-      this.#logger.debug(`  Route: ${' '.repeat(8 - method.length)}${method.toUpperCase()} ${green(url)} -> ${cyan(name.toString())}`);
+      this.logger.debug(`  ${gray('Route:')} ${' '.repeat(8 - method.length)}${method.toUpperCase()} ${cyan(url)} ${gray('->')} ${green(name.toString())}`);
     });
 
     return [controllerMetadata.path, router];

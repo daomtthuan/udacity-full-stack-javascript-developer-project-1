@@ -1,3 +1,4 @@
+import { gray } from 'ansis';
 import { singleton } from 'tsyringe';
 import Winston from 'winston';
 import WinstonDailyRotateFile from 'winston-daily-rotate-file';
@@ -72,7 +73,7 @@ export default class Logger implements ILogger {
       exitOnError: false,
     });
 
-    this.debug('Logger initialized');
+    this.debug(`Logger ${gray('initialized')}`);
   }
 
   public error(message: string, ...meta: unknown[]): void {

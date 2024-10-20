@@ -1,8 +1,13 @@
 import { controller } from '~core/decorators';
-import Controller from '~core/modules/Controller';
+import AutoLogger from '~utils/AutoLogger';
+import Logger from '~utils/Logger';
 
 /** Base class for API controllers. */
 @controller({
   path: '/api',
 })
-export default class ApiControllerBase extends Controller {}
+export default class ApiControllerBase extends AutoLogger {
+  public constructor(logger: Logger) {
+    super(logger);
+  }
+}

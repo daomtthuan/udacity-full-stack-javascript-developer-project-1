@@ -6,24 +6,23 @@ import { singleton } from 'tsyringe';
 import type { AppRunOptions, ExpressApp, HttpServer, IApp } from '~core/types';
 
 import Router from '~core/modules/Router';
+import AutoLogger from '~utils/AutoLogger';
 import Logger from '~utils/Logger';
 
 /** Application. */
 @singleton()
-export default class App implements IApp {
-  readonly #logger: Logger;
+export default class App extends AutoLogger implements IApp {
   readonly #router: Router;
 
   readonly #instance: ExpressApp;
 
   public constructor(logger: Logger, router: Router) {
-    this.#logger = logger;
+    super(logger);
+
     this.#router = router;
 
     this.#instance = Express();
     this.#register();
-
-    this.#logger.debug('Application initialized');
   }
 
   public run({ host, port, onRun }: AppRunOptions): HttpServer {

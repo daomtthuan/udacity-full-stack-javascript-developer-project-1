@@ -5,30 +5,29 @@ import type { HttpServer, IServer, ServerConfig } from '~core/types';
 
 import App from '~core/modules/App';
 import Configuration from '~core/modules/Configuration';
+import AutoLogger from '~utils/AutoLogger';
 import Logger from '~utils/Logger';
 
 /** Server. */
 @singleton()
-export default class Server implements IServer {
+export default class Server extends AutoLogger implements IServer {
   readonly #config: ServerConfig;
-  readonly #logger: Logger;
   readonly #app: App;
 
   #instance: HttpServer;
 
   public constructor(config: Configuration, logger: Logger, app: App) {
+    super(logger);
+
     this.#config = config.serverConfig;
-    this.#logger = logger;
     this.#app = app;
 
     this.#instance = this.#run();
-
-    this.#logger.debug('Server initialized');
   }
 
   public start(): void {
     if (this.#instance.listening) {
-      this.#logger.warn(`Server is already running on ${cyan(this.#baseUrl)}`);
+      this.logger.warn(`Server is already running on ${cyan(this.#baseUrl)}`);
       return;
     }
 
@@ -37,7 +36,7 @@ export default class Server implements IServer {
 
   public stop(): void {
     if (!this.#instance.listening) {
-      this.#logger.warn('Server is not running');
+      this.logger.warn('Server is not running');
       return;
     }
 
@@ -62,18 +61,18 @@ export default class Server implements IServer {
   }
 
   #onStart(): void {
-    this.#logger.info(`Server running on ${cyan(this.#baseUrl)}`);
+    this.logger.info(`Server running on ${cyan(this.#baseUrl)}`);
   }
 
   #onError(error: NodeJS.ErrnoException): void {
     if (error.syscall === 'listen') {
       if (error.code === 'EACCES') {
-        this.#logger.error(`Port ${this.#config.port} requires elevated privileges`);
+        this.logger.error(`Port ${this.#config.port} requires elevated privileges`);
         process.exit(1);
       }
 
       if (error.code === 'EADDRINUSE') {
-        this.#logger.error(`Port ${this.#config.port} is already in use`);
+        this.logger.error(`Port ${this.#config.port} is already in use`);
         process.exit(1);
       }
     }
