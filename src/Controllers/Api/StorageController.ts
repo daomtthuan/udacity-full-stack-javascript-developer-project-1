@@ -36,7 +36,25 @@ export default class StorageController extends ApiControllerBase {
 
   @action.get({ path: '/images' })
   public getImages(_req: ExpressRequest, res: ExpressResponse): void {
-    res.send('Image list');
+    try {
+      const imageResourceDir = Path.resolve(this.#directoryConfig.resourceDir, ImageStorage.DIR);
+      const imageDtos = FileSystem.readdirSync(imageResourceDir).reduce<ImageDto[]>((prev, file) => {
+        const filePath = Path.resolve(imageResourceDir, file);
+        if (FileSystem.statSync(filePath).isFile()) {
+          prev.push({
+            name: Path.basename(file, Path.extname(file)),
+          });
+        }
+
+        return prev;
+      }, []);
+
+      this.logger.info(`${this.loggerLabel} Get images`, { imageDtos });
+      res.send(imageDtos);
+    } catch (error) {
+      this.logger.error(`${this.loggerLabel} Error get images`, { error });
+      return this.serverError(res, 'Can not get images');
+    }
   }
 
   @action.get({
@@ -44,18 +62,23 @@ export default class StorageController extends ApiControllerBase {
     middlewares: [storageContainer.resolve(ValidatorMiddleware).handler(ApiDtoSchema.ImageDto, 'params')],
   })
   public getImage(req: ExpressRequest, res: ExpressResponse): void {
-    const name = req.params['name'] as string;
-    if (!this.#validator.isExistImage(name)) {
-      this.logger.debug(`${this.loggerLabel} Image not found`, { name });
-      return this.notFound(res, 'Image not found');
+    try {
+      const name = req.params['name'] as string;
+      if (!this.#validator.isExistImage(name)) {
+        this.logger.debug(`${this.loggerLabel} Image not found`, { name });
+        return this.notFound(res, 'Image not found');
+      }
+
+      const imageDto: ImageDto = {
+        name,
+      };
+
+      this.logger.info(`${this.loggerLabel} Get image`, { imageDto });
+      return this.ok(res, imageDto);
+    } catch (error) {
+      this.logger.error(`${this.loggerLabel} Error get image`, { error });
+      return this.serverError(res, 'Can not get image');
     }
-
-    const imageDto: ImageDto = {
-      name,
-    };
-
-    this.logger.info(`${this.loggerLabel} Get image`, { imageDto });
-    return this.ok(res, imageDto);
   }
 
   @action.post({
@@ -88,8 +111,26 @@ export default class StorageController extends ApiControllerBase {
     }
   }
 
-  @action.delete({ path: '/image/:name' })
-  public delete(_req: ExpressRequest, res: ExpressResponse): void {
-    res.send('Image deleted');
+  @action.delete({
+    path: '/image/:name',
+    middlewares: [storageContainer.resolve(ValidatorMiddleware).handler(ApiDtoSchema.ImageDto, 'params')],
+  })
+  public delete(req: ExpressRequest, res: ExpressResponse): void {
+    try {
+      const name = req.params['name'] as string;
+      const imagePath = this.#validator.isExistImage(name);
+      if (!imagePath) {
+        this.logger.debug(`${this.loggerLabel} Image not found`, { name });
+        return this.notFound(res, 'Image not found');
+      }
+
+      FileSystem.rmSync(imagePath);
+
+      this.logger.info(`${this.loggerLabel} Image deleted`, { name, imagePath });
+      return this.noContent(res);
+    } catch (error) {
+      this.logger.error(`${this.loggerLabel} Error delete image`, { error });
+      return this.serverError(res, 'Can not delete image');
+    }
   }
 }

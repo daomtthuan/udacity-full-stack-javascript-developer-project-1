@@ -10,10 +10,10 @@ import ImageStorage from '~Middlewares/Modules/UploadFile/ImageStorage';
 /** Storage Validator. */
 @injectable()
 export default class StorageValidator {
-  readonly #config: DirectoryConfig;
+  readonly #directoryConfig: DirectoryConfig;
 
   public constructor(config: Configuration) {
-    this.#config = config.directoryConfig;
+    this.#directoryConfig = config.directoryConfig;
   }
 
   /**
@@ -24,7 +24,7 @@ export default class StorageValidator {
    * @returns Image path. False if image not exists.
    */
   public isExistImage(name: string): false | string {
-    const imageResourceDir = Path.resolve(this.#config.resourceDir, ImageStorage.DIR);
+    const imageResourceDir = Path.resolve(this.#directoryConfig.resourceDir, ImageStorage.DIR);
     const result = FileSystem.readdirSync(imageResourceDir).find((file) => {
       const imageName = Path.basename(file, Path.extname(file));
       return imageName === name;

@@ -40,6 +40,15 @@ export default abstract class Controller extends Loggable {
   }
 
   /**
+   * Send a no content response.
+   *
+   * @param res Response.
+   */
+  protected noContent(res: ExpressResponse): void {
+    res.status(204).send();
+  }
+
+  /**
    * Send a bad request response.
    *
    * @param res Response.
