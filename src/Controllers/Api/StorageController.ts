@@ -4,12 +4,14 @@ import { container } from 'tsyringe';
 
 import type { ImageDto } from '~Controllers/Types/ApiDto.type';
 import type { ExpressRequest, ExpressResponse } from '~Core/Types/App.type';
+import type { DirectoryConfig } from '~Core/Types/Configuration.type';
 import type { ResolvedFile } from '~Middlewares/Types/UploadFile.type';
 
 import ApiControllerBase from '~Controllers/Api/ApiControllerBase';
 import StorageValidator from '~Controllers/Api/Validators/StorageValidator';
 import { ApiDtoSchema } from '~Controllers/Schemas/ApiDtoSchema';
 import { action, controller } from '~Core/Decorators';
+import Configuration from '~Core/Modules/Configuration';
 import { MiddlewareToken } from '~Middlewares/Constants/MiddlewareToken';
 import ImageStorage from '~Middlewares/Modules/UploadFile/ImageStorage';
 import UploadFileMiddleware from '~Middlewares/Modules/UploadFile/UploadFileMiddleware';
@@ -22,11 +24,13 @@ storageContainer.register(MiddlewareToken.IFileStorage, ImageStorage);
 /** Image Storage API controller. */
 @controller({ path: '/storage' })
 export default class StorageController extends ApiControllerBase {
+  readonly #directoryConfig: DirectoryConfig;
   readonly #validator: StorageValidator;
 
-  public constructor(logger: Logger, validator: StorageValidator) {
+  public constructor(config: Configuration, logger: Logger, validator: StorageValidator) {
     super(logger);
 
+    this.#directoryConfig = config.directoryConfig;
     this.#validator = validator;
   }
 
@@ -64,16 +68,19 @@ export default class StorageController extends ApiControllerBase {
   public async uploadImage(req: ExpressRequest, res: ExpressResponse): Promise<void> {
     try {
       const imageDto = req.body as ImageDto;
+      const file = req.file as ResolvedFile;
+
       if (this.#validator.isExistImage(imageDto.name)) {
         this.logger.debug(`${this.loggerLabel} Image already exists`, { imageDto });
+        FileSystem.rmSync(file.path);
+
         return this.conflict(res, 'Image already exists');
       }
 
-      const file = req.file as ResolvedFile;
-      const path = Path.join(file.destination, `${imageDto.name}${Path.extname(file.originalname)}`);
-      FileSystem.renameSync(file.path, path);
+      const imagePath = Path.resolve(this.#directoryConfig.resourceDir, ImageStorage.DIR, `${imageDto.name}${Path.extname(file.originalname)}`);
+      FileSystem.renameSync(file.path, imagePath);
 
-      this.logger.info(`${this.loggerLabel} Image uploaded`, { path });
+      this.logger.info(`${this.loggerLabel} Image uploaded`, { path: imagePath });
       return this.created(res, imageDto);
     } catch (error) {
       this.logger.error(`${this.loggerLabel} Error process uploaded image`, { error });

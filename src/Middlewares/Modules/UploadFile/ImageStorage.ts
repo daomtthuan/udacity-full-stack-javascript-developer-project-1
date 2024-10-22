@@ -18,6 +18,7 @@ import Logger from '~Utils/Modules/Logger/Logger';
 @injectable()
 export default class ImageStorage extends Loggable implements IFileStorage {
   public static readonly DIR = 'images';
+  public static readonly TEMP_DIR = '.temp';
 
   readonly #config: DirectoryConfig;
 
@@ -35,12 +36,12 @@ export default class ImageStorage extends Loggable implements IFileStorage {
   }
 
   #destination(_req: ExpressRequest, _file: ResolvedFile, resolve: (error: Error | null, destination: string) => void): void {
-    const dir = Path.resolve(this.#config.resourceDir, ImageStorage.DIR);
+    const dir = Path.resolve(this.#config.resourceDir, ImageStorage.DIR, ImageStorage.TEMP_DIR);
     if (!FileSystem.existsSync(dir)) {
       FileSystem.mkdirSync(dir, { recursive: true });
     }
 
-    resolve(null, Path.resolve(this.#config.resourceDir, ImageStorage.DIR));
+    resolve(null, Path.resolve(this.#config.resourceDir, ImageStorage.DIR, ImageStorage.TEMP_DIR));
   }
 
   #filename(_req: ExpressRequest, file: ResolvedFile, resolve: (error: Error | null, filename: string) => void): void {
