@@ -27,7 +27,7 @@ export default class Server extends Loggable implements IServer {
 
   public start(): void {
     if (this.#instance.listening) {
-      this.logger.warn(`Server is already running on ${cyan(this.#baseUrl)}`);
+      this.logger.warn(`${this.loggerLabel} Server is already running on ${cyan(this.#baseUrl)}`);
       return;
     }
 
@@ -36,7 +36,7 @@ export default class Server extends Loggable implements IServer {
 
   public stop(): void {
     if (!this.#instance.listening) {
-      this.logger.warn('Server is not running');
+      this.logger.warn(`${this.loggerLabel} Server is not running`);
       return;
     }
 
@@ -61,18 +61,18 @@ export default class Server extends Loggable implements IServer {
   }
 
   #onStart(): void {
-    this.logger.info(`Server running on ${cyan(this.#baseUrl)}`);
+    this.logger.info(`${this.loggerLabel} Server running on ${cyan(this.#baseUrl)}`);
   }
 
   #onError(error: NodeJS.ErrnoException): void {
     if (error.syscall === 'listen') {
       if (error.code === 'EACCES') {
-        this.logger.error(`Port ${this.#config.port} requires elevated privileges`);
+        this.logger.error(`${this.loggerLabel} Port ${this.#config.port} requires elevated privileges`);
         process.exit(1);
       }
 
       if (error.code === 'EADDRINUSE') {
-        this.logger.error(`Port ${this.#config.port} is already in use`);
+        this.logger.error(`${this.loggerLabel} Port ${this.#config.port} is already in use`);
         process.exit(1);
       }
     }

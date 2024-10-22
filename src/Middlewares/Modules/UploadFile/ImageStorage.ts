@@ -8,8 +8,7 @@ import { v4 as UUID } from 'uuid';
 
 import type { ExpressRequest } from '~Core/Types/App.type';
 import type { DirectoryConfig } from '~Core/Types/Configuration.type';
-import type { IFileStorage } from '~Middlewares/Types/FileStorage.type';
-import type { ResolvedFile } from '~Middlewares/Types/UploadFileMiddleware.type';
+import type { IFileStorage, ResolvedFile } from '~Middlewares/Types/UploadFile.type';
 
 import Configuration from '~Core/Modules/Configuration';
 import Loggable from '~Utils/Modules/Logger/Loggable';
@@ -18,11 +17,11 @@ import Logger from '~Utils/Modules/Logger/Logger';
 /** Image Storage. */
 @injectable()
 export default class ImageStorage extends Loggable implements IFileStorage {
+  public static readonly DIR = 'images';
+
   readonly #config: DirectoryConfig;
 
   readonly #instance: StorageEngine;
-
-  private readonly DIR = 'images';
 
   public constructor(config: Configuration, logger: Logger) {
     super(logger);
@@ -36,12 +35,12 @@ export default class ImageStorage extends Loggable implements IFileStorage {
   }
 
   #destination(_req: ExpressRequest, _file: ResolvedFile, resolve: (error: Error | null, destination: string) => void): void {
-    const dir = Path.resolve(this.#config.resourceDir, this.DIR);
+    const dir = Path.resolve(this.#config.resourceDir, ImageStorage.DIR);
     if (!FileSystem.existsSync(dir)) {
       FileSystem.mkdirSync(dir, { recursive: true });
     }
 
-    resolve(null, Path.resolve(this.#config.resourceDir, this.DIR));
+    resolve(null, Path.resolve(this.#config.resourceDir, ImageStorage.DIR));
   }
 
   #filename(_req: ExpressRequest, file: ResolvedFile, resolve: (error: Error | null, filename: string) => void): void {

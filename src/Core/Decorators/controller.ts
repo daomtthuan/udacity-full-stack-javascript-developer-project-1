@@ -4,7 +4,7 @@ import { injectable } from 'tsyringe';
 
 import type { ControllerDecorator, ControllerMetadata, ControllerOptions, IController } from '~Core/Types/Controller.type';
 
-import StringUtil from '~Utils/Modules/Data/StringUtil';
+import StringUtil from '~Utils/Modules/DataUtil/StringUtil';
 
 /**
  * Controller decorator factory.

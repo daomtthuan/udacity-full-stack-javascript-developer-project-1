@@ -33,6 +33,7 @@ export default class App extends Loggable implements IApp {
   #register(): void {
     this.#instance.use(Helmet());
     this.#instance.use(Express.json());
+    this.#instance.use(Express.urlencoded({ extended: true }));
     this.#instance.use(Compression());
 
     this.#router.routes.forEach((routeConfig) => {

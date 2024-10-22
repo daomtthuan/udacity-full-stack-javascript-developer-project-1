@@ -1,4 +1,4 @@
-import { gray } from 'ansis';
+import { magenta } from 'ansis';
 
 import Logger from '~Utils/Modules/Logger/Logger';
 
@@ -9,7 +9,11 @@ export default abstract class Loggable {
   protected constructor(logger: Logger) {
     this.#logger = logger;
 
-    this.#logger.debug(`${this.constructor.name} ${gray('initialized')}`);
+    this.#logger.debug(`${this.loggerLabel} initialized`);
+  }
+
+  protected get loggerLabel(): string {
+    return magenta(`[${this.constructor.name}]`);
   }
 
   /** Logger. */

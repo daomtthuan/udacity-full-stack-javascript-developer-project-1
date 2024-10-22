@@ -48,11 +48,11 @@ export default action;
  *
  * @returns Resolved options.
  */
-function resolveOptions({ method, path, middleware }: Partial<ActionOptions> = {}): ActionOptions {
+function resolveOptions({ method, path, middlewares: middleware }: Partial<ActionOptions> = {}): ActionOptions {
   return {
     method: method || 'get',
     path: path || '',
-    middleware: middleware || [],
+    middlewares: middleware || [],
   };
 }
 
@@ -70,7 +70,7 @@ function resolveOptions({ method, path, middleware }: Partial<ActionOptions> = {
 function defineMetadata<C extends IController, A extends object>(
   target: A,
   propertyKey: string | symbol,
-  { method, path, middleware }: ActionOptions,
+  { method, path, middlewares: middleware }: ActionOptions,
 ): ActionMetadata<C> {
   const metadata: ActionMetadata<C> = {
     isAction: true,

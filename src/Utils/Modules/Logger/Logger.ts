@@ -1,4 +1,4 @@
-import { blue, gray, red, yellow } from 'ansis';
+import { blue, gray, magenta, red, yellow } from 'ansis';
 import { singleton } from 'tsyringe';
 import Winston from 'winston';
 import WinstonDailyRotateFile from 'winston-daily-rotate-file';
@@ -38,7 +38,9 @@ export default class Logger implements ILogger {
         stack: true,
       }),
       WinstonFormat.printf(({ timestamp, level, message, ...data }) => {
-        const log = `${timestamp}${' '.repeat(7 - level.length)}${levelColor[level] || level}:  ${message}`;
+        const logLevelText = `${' '.repeat(7 - level.length)}${levelColor[level] || level}`;
+
+        const log = `${timestamp}${logLevelText}:  ${message}`;
         return Object.keys(data).length ? `${log}\n${JSON.stringify(data, null, 2)}` : log;
       }),
     );
@@ -70,7 +72,7 @@ export default class Logger implements ILogger {
       exitOnError: false,
     });
 
-    this.debug(`Logger ${gray('initialized')}`);
+    this.debug(`${magenta('[Logger]')} initialized`);
   }
 
   public error(message: string, ...meta: unknown[]): void {

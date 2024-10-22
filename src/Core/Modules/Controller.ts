@@ -3,7 +3,7 @@ import type { ExpressResponse } from '~Core/Types/App.type';
 import Loggable from '~Utils/Modules/Logger/Loggable';
 import Logger from '~Utils/Modules/Logger/Logger';
 
-/** Controller. */
+/** Controller base. */
 export default abstract class Controller extends Loggable {
   protected constructor(logger: Logger) {
     super(logger);
@@ -50,14 +50,22 @@ export default abstract class Controller extends Loggable {
   }
 
   /**
+   * Send a conflict response.
+   *
+   * @param res Response.
+   * @param message Message.
+   */
+  protected conflict(res: ExpressResponse, message: string = 'Conflict'): void {
+    res.status(409).send(message);
+  }
+
+  /**
    * Send a error response.
    *
-   * @template E Error type.
    * @param res Response.
    * @param error Error.
    */
-  protected serverError<E>(res: ExpressResponse, error: E, message: string = 'Internal server error'): void {
-    this.logger.error(message, { error });
+  protected serverError(res: ExpressResponse, message: string = 'Internal server error'): void {
     res.status(500).send(message);
   }
 }

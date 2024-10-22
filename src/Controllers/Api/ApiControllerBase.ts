@@ -1,4 +1,4 @@
-import controller from '~Core/Decorators/Controller';
+import { controller } from '~Core/Decorators';
 import Controller from '~Core/Modules/Controller';
 import Logger from '~Utils/Modules/Logger/Logger';
 

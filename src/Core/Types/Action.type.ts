@@ -15,8 +15,8 @@ export type ActionOptions = {
   /** Path of the action route. */
   path: string;
 
-  /** Middleware for the action. */
-  middleware: RequestHandler[];
+  /** Middlewares for the action. */
+  middlewares: RequestHandler[];
 };
 
 /** Special action options. */
