@@ -51,6 +51,21 @@
 					"request": {
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "{{image_name}}",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/C:/Users/Thuan/Downloads/pexels-ruxandra-scutelnic-1470184397-28750711.jpg"
+								}
+							]
+						},
 						"url": {
 							"raw": "{{BASE_URL}}/{{API_STORAGE_BASE}}/upload",
 							"host": [
@@ -132,7 +147,7 @@
 	"variable": [
 		{
 			"key": "image_name",
-			"value": "",
+			"value": "pinic",
 			"type": "default"
 		}
 	]

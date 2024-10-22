@@ -30,6 +30,16 @@ export default abstract class Controller extends Loggable {
   }
 
   /**
+   * Send a file response.
+   *
+   * @param res Response.
+   * @param path Path.
+   */
+  protected sendFile(res: ExpressResponse, path: string): void {
+    res.status(200).sendFile(path);
+  }
+
+  /**
    * Send a created response.
    *
    * @param res Response.

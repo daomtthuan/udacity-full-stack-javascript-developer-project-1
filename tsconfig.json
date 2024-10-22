@@ -21,6 +21,8 @@
       "~Controllers/*": ["src/Controllers/*"],
       "~Core/*": ["src/Core/*"],
       "~Middlewares/*": ["src/Middlewares/*"],
+      "~Models/*": ["src/Models/*"],
+      "~Services/*": ["src/Services/*"],
       "~Utils/*": ["src/Utils/*"]
     },
 

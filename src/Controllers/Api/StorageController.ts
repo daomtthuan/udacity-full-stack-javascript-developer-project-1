@@ -1,21 +1,17 @@
-import FileSystem from 'fs';
-import Path from 'path';
 import { container } from 'tsyringe';
 
 import type { ImageDto } from '~Controllers/Types/ApiDto.type';
 import type { ExpressRequest, ExpressResponse } from '~Core/Types/App.type';
-import type { DirectoryConfig } from '~Core/Types/Configuration.type';
 import type { ResolvedFile } from '~Middlewares/Types/UploadFile.type';
 
 import ApiControllerBase from '~Controllers/Api/ApiControllerBase';
-import StorageValidator from '~Controllers/Api/Validators/StorageValidator';
 import { ApiDtoSchema } from '~Controllers/Schemas/ApiDtoSchema';
 import { action, controller } from '~Core/Decorators';
-import Configuration from '~Core/Modules/Configuration';
 import { MiddlewareToken } from '~Middlewares/Constants/MiddlewareToken';
 import ImageStorage from '~Middlewares/Modules/UploadFile/ImageStorage';
 import UploadFileMiddleware from '~Middlewares/Modules/UploadFile/UploadFileMiddleware';
 import ValidatorMiddleware from '~Middlewares/Modules/Validator/ValidatorMiddleware';
+import ImageService from '~Services/ImageService';
 import Logger from '~Utils/Modules/Logger/Logger';
 
 const storageContainer = container.createChildContainer();
@@ -24,30 +20,18 @@ storageContainer.register(MiddlewareToken.IFileStorage, ImageStorage);
 /** Image Storage API controller. */
 @controller({ path: '/storage' })
 export default class StorageController extends ApiControllerBase {
-  readonly #directoryConfig: DirectoryConfig;
-  readonly #validator: StorageValidator;
+  readonly #imageService: ImageService;
 
-  public constructor(config: Configuration, logger: Logger, validator: StorageValidator) {
+  public constructor(logger: Logger, imageService: ImageService) {
     super(logger);
 
-    this.#directoryConfig = config.directoryConfig;
-    this.#validator = validator;
+    this.#imageService = imageService;
   }
 
   @action.get({ path: '/images' })
   public getImages(_req: ExpressRequest, res: ExpressResponse): void {
     try {
-      const imageResourceDir = Path.resolve(this.#directoryConfig.resourceDir, ImageStorage.DIR);
-      const imageDtos = FileSystem.readdirSync(imageResourceDir).reduce<ImageDto[]>((prev, file) => {
-        const filePath = Path.resolve(imageResourceDir, file);
-        if (FileSystem.statSync(filePath).isFile()) {
-          prev.push({
-            name: Path.basename(file, Path.extname(file)),
-          });
-        }
-
-        return prev;
-      }, []);
+      const imageDtos = this.#imageService.getImages().map<ImageDto>(({ name }) => ({ name }));
 
       this.logger.info(`${this.loggerLabel} Get images`, { imageDtos });
       res.send(imageDtos);
@@ -64,13 +48,15 @@ export default class StorageController extends ApiControllerBase {
   public getImage(req: ExpressRequest, res: ExpressResponse): void {
     try {
       const name = req.params['name'] as string;
-      if (!this.#validator.isExistImage(name)) {
+
+      const image = this.#imageService.getImage(name);
+      if (!image) {
         this.logger.debug(`${this.loggerLabel} Image not found`, { name });
         return this.notFound(res, 'Image not found');
       }
 
       const imageDto: ImageDto = {
-        name,
+        name: image.name,
       };
 
       this.logger.info(`${this.loggerLabel} Get image`, { imageDto });
@@ -93,18 +79,21 @@ export default class StorageController extends ApiControllerBase {
       const imageDto = req.body as ImageDto;
       const file = req.file as ResolvedFile;
 
-      if (this.#validator.isExistImage(imageDto.name)) {
+      const existedImage = this.#imageService.getImage(imageDto.name);
+      if (existedImage) {
         this.logger.debug(`${this.loggerLabel} Image already exists`, { imageDto });
-        FileSystem.rmSync(file.path);
+        this.#imageService.removeTempUploadImage(file);
 
         return this.conflict(res, 'Image already exists');
       }
 
-      const imagePath = Path.resolve(this.#directoryConfig.resourceDir, ImageStorage.DIR, `${imageDto.name}${Path.extname(file.originalname)}`);
-      FileSystem.renameSync(file.path, imagePath);
+      const newImage = this.#imageService.saveImage(file, imageDto.name);
+      const newImageDto: ImageDto = {
+        name: newImage.name,
+      };
 
-      this.logger.info(`${this.loggerLabel} Image uploaded`, { path: imagePath });
-      return this.created(res, imageDto);
+      this.logger.info(`${this.loggerLabel} Image uploaded`, { image: newImage });
+      return this.created(res, newImageDto);
     } catch (error) {
       this.logger.error(`${this.loggerLabel} Error process uploaded image`, { error });
       return this.serverError(res, 'Can not process uploaded image');
@@ -118,15 +107,16 @@ export default class StorageController extends ApiControllerBase {
   public delete(req: ExpressRequest, res: ExpressResponse): void {
     try {
       const name = req.params['name'] as string;
-      const imagePath = this.#validator.isExistImage(name);
-      if (!imagePath) {
+
+      const image = this.#imageService.getImage(name);
+      if (!image) {
         this.logger.debug(`${this.loggerLabel} Image not found`, { name });
         return this.notFound(res, 'Image not found');
       }
 
-      FileSystem.rmSync(imagePath);
+      this.#imageService.removeImage(image);
 
-      this.logger.info(`${this.loggerLabel} Image deleted`, { name, imagePath });
+      this.logger.info(`${this.loggerLabel} Image deleted`, { image });
       return this.noContent(res);
     } catch (error) {
       this.logger.error(`${this.loggerLabel} Error delete image`, { error });
