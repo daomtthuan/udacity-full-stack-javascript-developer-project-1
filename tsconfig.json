@@ -18,10 +18,10 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "~controllers/*": ["src/controllers/*"],
-      "~core/*": ["src/core/*"],
-      "~middlewares/*": ["src/middlewares/*"],
-      "~utils/*": ["src/utils/*"]
+      "~Controllers/*": ["src/Controllers/*"],
+      "~Core/*": ["src/Core/*"],
+      "~Middlewares/*": ["src/Middlewares/*"],
+      "~Utils/*": ["src/Utils/*"]
     },
 
     // # JavaScript Support

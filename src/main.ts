@@ -2,6 +2,6 @@ import 'reflect-metadata';
 
 import { container } from 'tsyringe';
 
-import Server from '~core/modules/Server';
+import Server from '~Core/Modules/Server';
 
 container.resolve(Server);
