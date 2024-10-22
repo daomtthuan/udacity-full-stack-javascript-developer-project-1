@@ -5,11 +5,11 @@ import { registry } from 'tsyringe';
 
 import type { ImageDto } from '~controllers/types';
 import type { ExpressRequest, ExpressResponse } from '~core/types';
-import type { ResolvedFile } from '~middlewares/types';
 
 import ApiControllerBase from '~controllers/api/ApiControllerBase';
 import { action, controller } from '~core/decorators';
-import { MiddlewareToken } from '~middlewares/constants/Token';
+import NotFoundError from '~core/errors/NotFoundError';
+import { MiddlewareToken } from '~middlewares/constants/MiddlewareToken';
 import ImageStorage from '~middlewares/modules/ImageStorage';
 import UploadFileMiddleware from '~middlewares/UploadFileMiddleware';
 import Logger from '~utils/Logger';
@@ -23,7 +23,7 @@ import Logger from '~utils/Logger';
 ])
 @controller({ path: '/storage' })
 export default class StorageController extends ApiControllerBase {
-  readonly #uploadFileMiddleware;
+  readonly #uploadFileMiddleware: UploadFileMiddleware;
 
   public constructor(logger: Logger, UploadFileMiddleware: UploadFileMiddleware) {
     super(logger);
@@ -48,23 +48,31 @@ export default class StorageController extends ApiControllerBase {
   @action.post({
     path: '/upload',
   })
-  public uploadImage(req: ExpressRequest, res: ExpressResponse): void {
-    const uploadFileHandler = this.#uploadFileMiddleware.handler('image');
-    uploadFileHandler(req, res, (error) => {
-      if (error) {
-        this.logger.error('Error uploading image', { error });
-        if (error instanceof MulterError) {
-          res.status(400).send('Invalid file');
-        } else {
-          res.status(500).send('Internal server error');
-        }
+  public async uploadImage(req: ExpressRequest, res: ExpressResponse): Promise<void> {
+    const imageDto: ImageDto = {
+      name: req.body.name,
+    };
 
-        return;
+    try {
+      const file = await this.#uploadFileMiddleware.resolve(req, res, 'image');
+
+      const path = Path.join(file.destination, `${imageDto.name}${Path.extname(file.originalname)}`);
+      FileSystem.renameSync(file.path, path);
+
+      this.logger.info('Image uploaded', { path });
+
+      return this.created(res, imageDto);
+    } catch (error) {
+      if (error instanceof MulterError) {
+        return this.badRequest(res, 'Invalid file');
       }
 
-      this.logger.debug('Upload image', { file: req.file });
-      this.#onUploadImage(req, res);
-    });
+      if (error instanceof NotFoundError) {
+        return this.serverError(res, error, 'File not found');
+      }
+
+      return this.serverError(res, error);
+    }
   }
 
   @action.delete({ path: '/image/:name' })
@@ -72,21 +80,5 @@ export default class StorageController extends ApiControllerBase {
     this.logger.info('Delete image');
 
     res.send('Image deleted');
-  }
-
-  #onUploadImage(req: ExpressRequest, res: ExpressResponse): void {
-    const imageDto = req.body as ImageDto;
-    const file = req.file as ResolvedFile;
-
-    try {
-      const newPath = Path.join(file.destination, `${imageDto.name}${Path.extname(file.originalname)}`);
-      FileSystem.renameSync(file.path, newPath);
-
-      this.logger.info('Image uploaded', { newPath });
-      res.send('Image uploaded');
-    } catch (error) {
-      this.logger.error('Error uploading image', { error });
-      res.status(500).send('Internal server error');
-    }
   }
 }

@@ -1,5 +1,6 @@
-import type { RequestHandler } from 'express';
 import type { Multer } from 'multer';
+
+import type { ExpressRequest, ExpressResponse } from '~core/types';
 
 /** Resolved File. */
 export type ResolvedFile = Express.Multer.File;
@@ -10,9 +11,11 @@ export type MulterResolver = Multer;
 /** Upload File Handler. */
 export interface IUploadFileMiddleware {
   /**
-   * Handle upload file.
+   * Resolve upload file.
    *
    * @param name Field name of form data.
+   * @param req Request.
+   * @param res Response.
    */
-  handler(name: string): RequestHandler;
+  resolve(req: ExpressRequest, res: ExpressResponse, name: string): Promise<ResolvedFile>;
 }

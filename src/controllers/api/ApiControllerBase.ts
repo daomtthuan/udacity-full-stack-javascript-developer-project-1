@@ -1,12 +1,12 @@
 import { controller } from '~core/decorators';
-import Loggable from '~utils/Loggable';
+import Controller from '~core/modules/Controller';
 import Logger from '~utils/Logger';
 
 /** Base class for API controllers. */
 @controller({
   path: '/api',
 })
-export default class ApiControllerBase extends Loggable {
+export default class ApiControllerBase extends Controller {
   public constructor(logger: Logger) {
     super(logger);
   }

@@ -1,9 +1,11 @@
 import Multer from 'multer';
 import { inject, injectable } from 'tsyringe';
 
-import type { IFileStorage, IUploadFileMiddleware, MulterResolver } from '~middlewares/types';
+import type { ExpressRequest, ExpressResponse } from '~core/types';
+import type { IFileStorage, IUploadFileMiddleware, MulterResolver, ResolvedFile } from '~middlewares/types';
 
-import { MiddlewareToken } from '~middlewares/constants/Token';
+import NotFoundError from '~core/errors/NotFoundError';
+import { MiddlewareToken } from '~middlewares/constants/MiddlewareToken';
 import Loggable from '~utils/Loggable';
 import Logger from '~utils/Logger';
 
@@ -20,7 +22,23 @@ export default class UploadFileMiddleware extends Loggable implements IUploadFil
     });
   }
 
-  public handler(fieldName: string) {
-    return this.#instance.single(fieldName);
+  public async resolve(req: ExpressRequest, res: ExpressResponse, fieldName: string): Promise<ResolvedFile> {
+    const handler = this.#instance.single(fieldName);
+
+    return new Promise<ResolvedFile>((resolve, reject) => {
+      handler(req, res, (error) => {
+        if (error) {
+          this.logger.error('Error resolve image', { error });
+          return reject(error);
+        }
+
+        if (!req.file) {
+          return reject(new NotFoundError('No file uploaded'));
+        }
+
+        this.logger.debug('Resolve image', { file: req.file });
+        return resolve(req.file);
+      });
+    });
   }
 }
