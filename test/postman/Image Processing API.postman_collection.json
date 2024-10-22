@@ -57,10 +57,12 @@
 								{
 									"key": "name",
 									"value": "{{image_name}}",
+									"description": "Image name",
 									"type": "text"
 								},
 								{
 									"key": "image",
+									"description": "Image file",
 									"type": "file",
 									"src": "/C:/Users/Thuan/Downloads/pexels-ruxandra-scutelnic-1470184397-28750711.jpg"
 								}
@@ -102,7 +104,38 @@
 		},
 		{
 			"name": "Image Processing",
-			"item": []
+			"item": [
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/{{API_IMAGE_BASE}}/{{image_name}}?width={{image_width}}&height={{image_height}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"{{API_IMAGE_BASE}}",
+								"{{image_name}}"
+							],
+							"query": [
+								{
+									"key": "width",
+									"value": "{{image_width}}",
+									"description": "Image width for processing"
+								},
+								{
+									"key": "height",
+									"value": "{{image_height}}",
+									"description": "Image height for processing"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		},
 		{
 			"name": "Index",
@@ -149,6 +182,16 @@
 			"key": "image_name",
 			"value": "pinic",
 			"type": "default"
+		},
+		{
+			"key": "image_width",
+			"value": "200",
+			"type": "string"
+		},
+		{
+			"key": "image_height",
+			"value": "200",
+			"type": "string"
 		}
 	]
 }
