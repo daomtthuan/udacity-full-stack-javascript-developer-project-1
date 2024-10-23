@@ -1,8 +1,4 @@
-import type {
-  Express,
-  Request,
-  Response,
-} from 'express';
+import type { Express, Request, Response } from 'express';
 
 import type { HttpServer } from '~Core/Types/Server.type';
 

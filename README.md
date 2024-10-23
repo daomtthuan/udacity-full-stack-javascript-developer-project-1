@@ -87,3 +87,71 @@ Please follow the steps below to setup and start the project.
 
 You can use postman or any other API testing tool to test the API endpoints.
 Postman collection and environment are provided in the `~/test/postman` folder.
+
+#### Storage
+
+- **GET** `/api/storage/images`: Get all images in the storage
+
+  **Example**:
+
+  ```curl
+  curl --location 'http://127.0.0.1:3000/api/storage/images'
+  ```
+
+- **GET** `/api/storage/images/:name`: Get an image by name
+
+  **Path Params**:
+
+  - **name**: `string` Image name
+
+  **Example**:
+
+  ```curl
+  curl --location 'http://127.0.0.1:3000/api/storage/image/pinic'
+  ```
+
+- **POST** `/api/storage/upload`: Upload an image to the storage
+
+  **Body**: form-data
+
+  - **Key**: `image` **Value**: `File` image file
+  - **Key**: `name` **Value**: `string` image name
+
+  **Example**:
+
+  ```curl
+  curl --location 'http://127.0.0.1:3000/api/storage/upload' \
+  --form 'name="pinic"' \
+  --form 'image=@"/C:/Users/Thuan/Downloads/pexels-ruxandra-scutelnic-1470184397-28750711.jpg"'
+  ```
+
+- **DELETE** `/api/storage/images/:name`: Delete an image by name
+
+  **Path Params**:
+
+  - **name**: `string` Image name
+
+  **Example**:
+
+  ```curl
+  curl --location --request DELETE 'http://127.0.0.1:3000/api/storage/image/pinic'
+  ```
+
+#### Processing
+
+- **GET** `/api/processing/images/:name`: Get an image by name
+
+  **Path Params**:
+
+  - **name**: `string` Image name
+
+  **Query Params**:
+
+  - **width**: `number` Image width
+  - **height**: `number` Image height
+
+  **Example**:
+
+  ```curl
+  curl --location 'http://127.0.0.1:3000/api/image/pinic?width=200&height=200'
+  ```
