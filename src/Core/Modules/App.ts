@@ -30,6 +30,10 @@ export default class App extends Loggable implements IApp {
     return this.#instance.listen(port, host, onRun);
   }
 
+  public get instance(): ExpressApp {
+    return this.#instance;
+  }
+
   #register(): void {
     this.#instance.use(Helmet());
     this.#instance.use(Express.json());

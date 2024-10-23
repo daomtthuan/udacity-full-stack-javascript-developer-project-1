@@ -6,7 +6,7 @@
     "*.jsx": "${capture}.js",
     "*.ts": "${capture}.js, ${capture}.type.ts",
     "*.tsx": "${capture}.ts",
-    "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, .editorconfig, .gitignore, tsconfig.*, eslint.config.*, prettier.config.*, nodemon.*",
+    "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, .editorconfig, .gitignore, tsconfig.*, eslint.config.*, prettier.config.*, nodemon.*, jest.config.*",
     "tsconfig.json": "tsconfig.*.json"
   },
   "exportall.config.folderListener": [],

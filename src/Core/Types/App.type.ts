@@ -1,4 +1,8 @@
-import type { Express, Request, Response } from 'express';
+import type {
+  Express,
+  Request,
+  Response,
+} from 'express';
 
 import type { HttpServer } from '~Core/Types/Server.type';
 
@@ -25,6 +29,9 @@ export type AppRunOptions = {
 
 /** Application. */
 export interface IApp {
+  /** Express application instance. */
+  instance: ExpressApp;
+
   /**
    * Run the application.
    *
