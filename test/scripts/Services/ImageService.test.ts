@@ -1,13 +1,11 @@
 import 'reflect-metadata';
 
-import type { Agent } from 'supertest';
-
+import assert from 'assert';
 import FileSystem from 'fs';
 import Path from 'path';
-import Test from 'supertest';
 import { container } from 'tsyringe';
 
-import App from '~Core/Modules/App';
+import ImageService from '~Services/ImageService';
 
 describe('StorageController', () => {
   const DATA_TEST_DIR = Path.join(__dirname, 'Data');
@@ -16,13 +14,11 @@ describe('StorageController', () => {
   const TEST_IMAGE_NAME_1 = 'image-test-1';
   const TEST_IMAGE_NAME_2 = 'image-test-2';
 
-  const BASE_URL = '/api/image';
   const IMAGE_RESOURCE_DIR = Path.join(__dirname, '../../../resources/images');
 
-  let agent: Agent;
+  let imageService: ImageService;
   beforeAll(() => {
-    const app = container.resolve(App);
-    agent = Test(app.instance);
+    imageService = container.resolve(ImageService);
   });
 
   beforeEach(() => {
@@ -47,29 +43,41 @@ describe('StorageController', () => {
     });
   });
 
-  it('should return resized image', async () => {
-    const res = await agent
-      .get(`${BASE_URL}/${TEST_IMAGE_NAME_1}`)
-      .query({
-        width: 100,
-        height: 100,
-      })
-      .expect(200);
+  it('should get images', () => {
+    const images = imageService.getImages();
 
-    expect(res.body).toBeInstanceOf(Buffer);
+    expect(images).toBeInstanceOf(Array);
+
+    const names = new Set();
+    images.forEach((image) => {
+      expect(image).toHaveProperty('name');
+      expect(image.name).not.toBe('');
+
+      expect(image).toHaveProperty('path');
+      expect(image.path).not.toBe('');
+
+      expect(names.has(image.name)).toBe(false);
+      names.add(image.name);
+    });
   });
 
-  it('should return 404 if image not found', async () => {
-    await agent
-      .get(`${BASE_URL}/NOT_EXIST_NAME`)
-      .query({
-        width: 100,
-        height: 100,
-      })
-      .expect(404);
+  it('should get image', () => {
+    const image = imageService.getImage(TEST_IMAGE_NAME_2);
+    expect(image).not.toBeNull();
+    assert(image);
+
+    expect(image).toHaveProperty('name');
+    expect(image.name).toBe(TEST_IMAGE_NAME_2);
+
+    expect(image).toHaveProperty('path');
+    expect(image.path).not.toBe('');
   });
 
-  it('should return 400 for invalid request', async () => {
-    await agent.get(`${BASE_URL}/${TEST_IMAGE_NAME_1}`).expect(400);
+  it('should throw error when get images', () => {
+    jest.spyOn(FileSystem, 'readdirSync').mockImplementation(() => {
+      throw new Error('Test error');
+    });
+
+    expect(() => imageService.getImages()).toThrow();
   });
 });

@@ -14,30 +14,33 @@ import App from '~Core/Modules/App';
 
 describe('StorageController', () => {
   const DATA_TEST_DIR = Path.join(__dirname, 'Data');
+  const DATA_IMAGE = Path.join(DATA_TEST_DIR, 'road.jpg');
+
+  const TEST_IMAGE_NAME_1 = 'image-test-1';
+  const TEST_IMAGE_NAME_2 = 'image-test-2';
+
   const BASE_URL = '/api/storage';
   const IMAGE_RESOURCE_DIR = Path.join(__dirname, '../../../resources/images');
-  const TEST_IMAGE_NAME = 'road';
 
+  let agent: Agent;
   beforeAll(() => {
-    ['road.jpg'].forEach((fileName) => {
-      const testImagePath = Path.join(DATA_TEST_DIR, fileName);
+    const app = container.resolve(App);
+    agent = Test(app.instance);
+  });
+
+  beforeEach(() => {
+    [`${TEST_IMAGE_NAME_1}.jpg`, `${TEST_IMAGE_NAME_2}.jpg`].forEach((fileName) => {
       const destTestImagePath = Path.join(IMAGE_RESOURCE_DIR, fileName);
       if (FileSystem.existsSync(destTestImagePath)) {
         return;
       }
 
-      FileSystem.copyFileSync(testImagePath, destTestImagePath);
+      FileSystem.copyFileSync(DATA_IMAGE, destTestImagePath);
     });
   });
 
-  let agent: Agent;
-  beforeEach(() => {
-    const app = container.resolve(App);
-    agent = Test(app.instance);
-  });
-
   afterAll(() => {
-    ['road.jpg'].forEach((fileName) => {
+    [`${TEST_IMAGE_NAME_1}.jpg`, `${TEST_IMAGE_NAME_2}.jpg`].forEach((fileName) => {
       const destTestImagePath = Path.join(IMAGE_RESOURCE_DIR, fileName);
       if (!FileSystem.existsSync(destTestImagePath)) {
         return;
@@ -63,10 +66,10 @@ describe('StorageController', () => {
   });
 
   it('should return image', async () => {
-    const resImage = await agent.get(`${BASE_URL}/image/${TEST_IMAGE_NAME}`).expect(200);
+    const resImage = await agent.get(`${BASE_URL}/image/${TEST_IMAGE_NAME_2}`).expect(200);
 
     expect(resImage.body).toHaveProperty('name');
-    expect(resImage.body.name).toBe(TEST_IMAGE_NAME);
+    expect(resImage.body.name).toBe(TEST_IMAGE_NAME_2);
   });
 
   it('should return not found image', async () => {
@@ -74,10 +77,8 @@ describe('StorageController', () => {
   });
 
   it('should upload an image', async () => {
-    const filePath = Path.join(DATA_TEST_DIR, 'road.jpg');
-
     const imageName = UUID();
-    const res = await agent.post(`${BASE_URL}/upload`).field('name', imageName).attach('image', filePath).expect(201);
+    const res = await agent.post(`${BASE_URL}/upload`).field('name', imageName).attach('image', DATA_IMAGE).expect(201);
 
     FileSystem.rmSync(Path.join(IMAGE_RESOURCE_DIR, `${imageName}.jpg`));
 
@@ -86,15 +87,13 @@ describe('StorageController', () => {
   });
 
   it('should return conflict if image already exists', async () => {
-    const filePath = Path.join(DATA_TEST_DIR, 'road.jpg');
-
-    await agent.post(`${BASE_URL}/upload`).field('name', TEST_IMAGE_NAME).attach('image', filePath).expect(409);
+    await agent.post(`${BASE_URL}/upload`).field('name', TEST_IMAGE_NAME_1).attach('image', DATA_IMAGE).expect(409);
   });
 
   it('should delete an image', async () => {
-    await agent.delete(`${BASE_URL}/image/${TEST_IMAGE_NAME}`).expect(204);
+    await agent.delete(`${BASE_URL}/image/${TEST_IMAGE_NAME_1}`).expect(204);
 
-    await agent.get(`${BASE_URL}/image/${TEST_IMAGE_NAME}`).expect(404);
+    await agent.get(`${BASE_URL}/image/${TEST_IMAGE_NAME_1}`).expect(404);
   });
 
   it('should return not found if delete image not exists', async () => {
