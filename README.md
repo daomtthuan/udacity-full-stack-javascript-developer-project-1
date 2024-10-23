@@ -6,9 +6,32 @@ Image Processing API
 
 ### Overview
 
+This project is an API for image processing. It provides the following functionalities:
+
+- Upload an image
+- Get an image by name
+- Get all images
+- Delete an image by name
+- Resize an image
+
 ### Functionality
 
 ## Result obtained
+
+Using TypeScript, Node.js, Express, and Sharp, I have created an API that can process images.
+The API can upload an image, get an image by name, get all images, delete an image by name, and resize an image.
+Beside that, I using Dependency Injection for architecture of the project.
+
+I also use the:
+
+- Repository pattern
+- Service pattern
+- Middleware pattern
+- Decorator pattern
+- Singleton pattern
+- Factory pattern
+
+I wrote unit tests for the API endpoints and the services. Using Jest for testing.
 
 ## Setup and Start
 
